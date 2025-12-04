@@ -5,6 +5,7 @@ import { Instagram, Facebook, Youtube, Info, Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TiktokIcon } from "@/components/icons";
 import React, { useState, useEffect } from 'react';
+import { useToast } from "@/hooks/use-toast";
 
 export type Platform = {
   id: "instagram" | "facebook" | "tiktok" | "youtube";
@@ -55,6 +56,24 @@ interface HomeScreenProps {
 }
 
 const AppInstallBanner = ({ onDismiss }: { onDismiss: () => void }) => {
+  const { toast } = useToast();
+
+  const handleDownloadClick = () => {
+    // Placeholder para a lógica de download real
+    // Por enquanto, apenas exibimos uma notificação
+    const link = document.createElement('a');
+    link.href = '/#'; // Link para o seu arquivo .apk ou para a loja de apps
+    link.download = 'baixa-videos.apk'; // Nome do arquivo
+    document.body.appendChild(link);
+    // link.click(); // Descomente quando tiver um link real
+    document.body.removeChild(link);
+
+    toast({
+      title: "Download em breve!",
+      description: "O aplicativo ainda não está disponível, mas agradecemos seu interesse!",
+    });
+  };
+  
   return (
     <div className="relative p-4 mb-6 rounded-lg bg-gradient-to-tr from-primary/20 via-primary/10 to-accent/10 border-l-4 border-primary animate-in fade-in-50 slide-in-from-bottom-5 duration-700">
       <Button variant="ghost" size="icon" className="absolute w-6 h-6 top-2 right-2 text-primary/70 hover:text-primary" onClick={onDismiss}>
@@ -64,7 +83,7 @@ const AppInstallBanner = ({ onDismiss }: { onDismiss: () => void }) => {
       <p className="mb-4 text-sm text-primary/80">
         Tenha a melhor experiência e baixe vídeos ilimitados diretamente no seu celular.
       </p>
-      <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+      <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleDownloadClick}>
         <Download className="mr-2" />
         Baixar o App
       </Button>

@@ -19,10 +19,8 @@ export default function Home() {
 
   return (
     <div 
-      className="flex flex-col items-center justify-center min-h-screen p-4 bg-background text-foreground bg-cover bg-center"
-      style={{ backgroundImage: "url('https://i.ibb.co/vC4zx7Zr/Screenshot-20251204-193610-Gallery.jpg')" }}
+      className="flex flex-col items-center justify-center min-h-screen p-4 bg-background text-foreground"
     >
-      <div className="absolute inset-0 bg-black/50 z-0" />
       <div className="w-full max-w-md bg-card/80 backdrop-blur-sm rounded-2xl shadow-2xl shadow-primary/10 overflow-hidden border border-border z-10">
         {/* Header */}
         <header className="relative p-6 text-center border-b border-border bg-transparent">

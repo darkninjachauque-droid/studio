@@ -287,16 +287,19 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
   return (
     <div className="p-6 animate-in fade-in duration-500">
-      <header className="relative flex items-center pb-4 mb-6 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={onGoBack} className="absolute left-0 top-0 rounded-full hover:bg-secondary">
+      <header className="relative flex items-center justify-between pb-4 mb-6 border-b border-border">
+        <Button variant="ghost" size="icon" onClick={onGoBack} className="rounded-full hover:bg-secondary">
           <ArrowLeft />
         </Button>
-        <h2 className="flex items-center justify-center flex-1 w-full gap-3 text-2xl font-bold">
+        <div className="flex items-center gap-3">
           <span className={`flex items-center justify-center w-8 h-8 rounded-md ${platform.iconColorClass} flex-shrink-0`}>
             <Icon className="w-5 h-5" />
           </span>
-          <span>Download {platform.name}</span>
-        </h2>
+          <h2 className="text-2xl font-bold">
+            <span>Download {platform.name}</span>
+          </h2>
+        </div>
+        <div className="w-10"></div>
       </header>
 
       <div className="p-5 mb-6 rounded-lg bg-secondary border-l-4 border-primary">

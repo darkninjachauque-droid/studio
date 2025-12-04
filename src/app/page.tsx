@@ -24,7 +24,7 @@ export default function Home() {
       <div className="w-full max-w-md bg-card/80 backdrop-blur-sm rounded-2xl shadow-2xl shadow-primary/10 overflow-hidden border border-border z-10">
         {/* Header */}
         <header className="relative p-6 text-center border-b border-border bg-transparent">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent animate-gradient" />
           <h1 className="flex items-center justify-center gap-3 text-4xl font-extrabold animate-blink-colors">
             <CloudDownload className="text-primary" size={36} />
             BAIXA VÍDEOS

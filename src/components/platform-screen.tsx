@@ -206,18 +206,23 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       const reader = response.body.getReader();
       const chunks: Uint8Array[] = [];
 
-      const read = async () => {
-        const { done, value } = await reader.read();
-        if (done) {
-          return;
+      const read = async (): Promise<void> => {
+        try {
+          const { done, value } = await reader.read();
+          if (done) {
+            return;
+          }
+          chunks.push(value);
+          loaded += value.length;
+          if (total > 0) {
+            const progress = Math.round((loaded / total) * 100);
+            setDownloadProgress(prev => prev && prev.id === downloadId ? { ...prev, progress } : prev);
+          }
+          await read();
+        } catch(err) {
+            console.error(err);
+            throw new Error("Falha ao ler o stream do arquivo.");
         }
-        chunks.push(value);
-        loaded += value.length;
-        if (total > 0) {
-          const progress = Math.round((loaded / total) * 100);
-          setDownloadProgress(prev => prev && prev.id === downloadId ? { ...prev, progress } : prev);
-        }
-        await read();
       };
       
       await read();
@@ -322,7 +327,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       )}
 
       {videoData && !loading && (
-        <div className="p-6 pt-2 rounded-lg bg-secondary animate-in slide-in-from-bottom-5 duration-500">
+        <div className="p-4 rounded-lg bg-secondary animate-in slide-in-from-bottom-5 duration-500">
             <Alert className="mb-4 border-green-500 bg-green-500/10 text-green-300">
                 <CheckCircle2 className="h-4 w-4 !text-green-400" />
                 <AlertTitle className="!text-green-400 font-bold">Vídeo encontrado!</AlertTitle>
@@ -336,10 +341,10 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
                     <PlayCircle />
                     Preview do Vídeo
                 </h4>
-                <div className="overflow-hidden rounded-b-lg">
+                <div className="overflow-hidden rounded-b-lg aspect-w-16 aspect-h-9">
                     <video
                         key={videoData.previewUrl}
-                        className="w-full aspect-video bg-black"
+                        className="w-full h-full object-cover bg-black"
                         controls
                         playsInline
                     >

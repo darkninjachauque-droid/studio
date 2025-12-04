@@ -3,6 +3,7 @@
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Instagram, Facebook, Youtube, Info } from "lucide-react";
 import { TiktokIcon } from "@/components/icons";
+import InstallPwaButton from "./install-pwa-button";
 
 export interface Platform {
   id: "instagram" | "facebook" | "tiktok" | "youtube";
@@ -85,6 +86,10 @@ export default function HomeScreen({ onPlatformSelect }: HomeScreenProps) {
       <div className="flex items-center gap-3 p-4 mt-6 text-center rounded-lg bg-accent/10 text-accent border border-accent/20">
         <Info className="w-5 h-5" />
         <p className="text-sm">Selecione uma plataforma acima para começar</p>
+      </div>
+
+      <div className="mt-6">
+        <InstallPwaButton />
       </div>
     </div>
   );

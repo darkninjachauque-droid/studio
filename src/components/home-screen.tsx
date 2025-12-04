@@ -3,9 +3,15 @@
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Instagram, Facebook, Youtube, Info } from "lucide-react";
 import { TiktokIcon } from "@/components/icons";
-import type { Platform } from "@/components/home-screen";
 
-export type { Platform };
+export interface Platform {
+  id: "instagram" | "facebook" | "tiktok" | "youtube";
+  name: string;
+  description: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  iconColorClass: string;
+  apiUrl: (url: string) => string;
+}
 
 const platformsData: Platform[] = [
   {
@@ -52,9 +58,9 @@ export default function HomeScreen({ onPlatformSelect }: HomeScreenProps) {
   return (
     <div className="p-6 animate-in fade-in duration-500">
       
-      <h2 className="relative pb-3 mb-6 text-2xl font-bold text-center animate-blink-colors">
+      <h2 className="relative pb-3 mb-6 text-2xl font-bold text-center">
         Escolha a Plataforma
-        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-primary to-accent rounded-full" />
+        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-primary to-accent rounded-full animate-gradient" />
       </h2>
       <div className="grid grid-cols-1 gap-3">
         {platformsData.map((platform) => {

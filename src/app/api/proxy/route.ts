@@ -44,6 +44,8 @@ export async function GET(request: Request) {
         const data = JSON.parse(responseText);
         return NextResponse.json(data);
     } catch (jsonError) {
+        // Se a resposta não for JSON (pode ser o caso de algumas APIs de vídeo),
+        // retorna a resposta como texto simples.
         return NextResponse.json({ 
             error: "API returned a non-JSON response.",
             data: responseText

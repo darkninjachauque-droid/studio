@@ -48,14 +48,19 @@ export default function InstallPwaButton() {
     setDeferredPrompt(null);
   };
 
-  if (isAppInstalled || !deferredPrompt) {
-    return null;
+  if (isAppInstalled) {
+    return (
+        <div className="text-center p-3 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20">
+            <p>O aplicativo já está instalado!</p>
+        </div>
+    );
   }
 
   return (
     <Button 
       onClick={handleInstallClick}
-      className="w-full h-12 text-base font-bold bg-gradient-to-r from-green-500 to-emerald-500 hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5 transition-all duration-300"
+      disabled={!deferredPrompt}
+      className="w-full h-12 text-base font-bold bg-gradient-to-r from-green-500 to-emerald-500 hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:-translate-y-0"
     >
       <Download className="mr-2" />
       Baixar Nosso Aplicativo

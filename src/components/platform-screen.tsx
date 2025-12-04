@@ -105,6 +105,11 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         throw new Error(data.error || data.msg || 'Não foi possível encontrar o vídeo. Verifique a URL e tente novamente.');
       }
       
+      // Checa se a resposta é um objeto vazio
+      if (typeof data === 'object' && data !== null && !Array.isArray(data) && Object.keys(data).length === 0) {
+        throw new Error('A API retornou uma resposta vazia. O vídeo pode não estar disponível ou a URL está incorreta.');
+      }
+      
       let newVideoData: VideoData | null = null;
       
       if (platform.id === 'tiktok' && data.data?.play) {
@@ -124,7 +129,18 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
           videoTitle = data.meta.title.replace(/[^a-zA-Z0-9 ]/g, "").replace(/\s+/g, '_');
         }
 
-        if (Array.isArray(data.url) && data.url.length > 0) {
+        // Nova lógica para extrair URL do youtube
+        if (data.data && Array.isArray(data.data.url) && data.data.url.length > 0) {
+          const sortedVideos = data.data.url
+            .filter((v: any) => v.quality && !v.noAudio)
+            .sort((a: any, b: any) => parseInt(b.quality) - parseInt(a.quality));
+          
+          if (sortedVideos.length > 0) {
+            videoUrl = sortedVideos[0].url;
+          }
+        }
+        // Fallback para a lógica antiga, caso a estrutura da API mude novamente
+        else if (Array.isArray(data.url) && data.url.length > 0) {
             const sortedData = data.url.sort((a:any,b:any) => parseInt(b.quality) - parseInt(a.quality));
             videoUrl = sortedData[0]?.url || sortedData[0]?.link;
         } else if (data.data?.url) {
@@ -143,7 +159,10 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       } else if (platform.id === 'instagram') {
          let videoUrl = '';
          if (Array.isArray(data) && data.length > 0) {
-            videoUrl = data[0].url || data[0];
+            const videoItem = data.find(item => item.url);
+            if(videoItem) videoUrl = videoItem.url;
+         } else if (data.url) {
+            videoUrl = data.url;
          }
         
         if (videoUrl) {
@@ -281,7 +300,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
   return (
     <div className="p-6 animate-in fade-in duration-500">
-      <header className="flex items-center w-full pb-4 mb-6 border-b border-border">
+      <header className="relative flex items-center w-full pb-4 mb-6 border-b border-border">
         <Button variant="ghost" size="icon" onClick={onGoBack} className="rounded-full hover:bg-secondary">
           <ArrowLeft />
         </Button>
@@ -387,7 +406,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
               {videoData.downloads.map((download, index) => (
                 <Button 
                     key={index}
-                    onClick={() => handleDownload(download.url, download.label === "Baixar Vídeo" ? `video.mp4` : `${platform.id}_${download.type}.mp4`)}
+                    onClick={() => handleDownload(download.url, download.filename)}
                     disabled={!!downloadProgress}
                     className={`w-full h-12 text-base font-bold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed
                       ${download.type === 'video' ? 'bg-gradient-to-r from-accent to-blue-400 hover:shadow-accent/40' : 'bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:shadow-purple-500/40'}`

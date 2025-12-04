@@ -101,7 +101,6 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
       const data = await response.json();
 
-      // Verificação robusta de erro ou resposta vazia
       if (!data || Object.keys(data).length === 0 || data.error || (data.status && data.status !== 'success' && data.status !== 200 && !data.data && !data.url)) {
         throw new Error(data.error || data.msg || 'A API retornou um erro ou uma resposta vazia. Verifique a URL e tente novamente.');
       }
@@ -150,6 +149,10 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
             videoUrl = data.data.links['HD video'] || data.data.links['Normal video'];
         } else if (data.links) {
             videoUrl = data.links['HD'] || data.links['SD'];
+        } else if (data.url) {
+            videoUrl = data.url;
+        } else if (Array.isArray(data) && data.length > 0 && data[0].url) {
+            videoUrl = data[0].url;
         }
 
         if (videoUrl) {

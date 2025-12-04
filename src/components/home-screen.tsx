@@ -52,7 +52,7 @@ export default function HomeScreen({ onPlatformSelect }: HomeScreenProps) {
   return (
     <div className="p-6 animate-in fade-in duration-500">
       
-      <h2 className="relative pb-3 mb-6 text-2xl font-bold text-center">
+      <h2 className="relative pb-3 mb-6 text-2xl font-bold text-center animate-blink-colors">
         Escolha a Plataforma
         <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-primary to-accent rounded-full" />
       </h2>

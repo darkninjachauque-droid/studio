@@ -3,17 +3,15 @@ import { NextResponse } from 'next/server';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
+  const filename = searchParams.get('filename') || 'video.mp4';
+  const isDownload = searchParams.get('download') === 'true';
 
   if (!url) {
     return NextResponse.json({ error: 'Missing URL' }, { status: 400 });
   }
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
+    const response = await fetch(url);
 
     if (!response.ok) {
         const errorData = await response.text();
@@ -23,14 +21,29 @@ export async function GET(request: Request) {
         }, { status: response.status });
     }
 
-    // Try to parse as JSON, but fall back to text if it fails
+    // Se for uma requisição de download de arquivo, faz o stream do corpo da resposta
+    if (isDownload) {
+      const headers = new Headers();
+      headers.set('Content-Type', response.headers.get('Content-Type') || 'application/octet-stream');
+      headers.set('Content-Disposition', `attachment; filename="${filename}"`);
+      if (response.headers.has('Content-Length')) {
+        headers.set('Content-Length', response.headers.get('Content-Length')!);
+      }
+
+      // Garante que o corpo da resposta exista antes de criar a resposta de stream
+      if (!response.body) {
+         return NextResponse.json({ error: 'Remote resource has no content' }, { status: 500 });
+      }
+
+      return new NextResponse(response.body, { headers });
+    }
+
+    // Se for uma requisição de API normal (JSON)
     const responseText = await response.text();
     try {
         const data = JSON.parse(responseText);
         return NextResponse.json(data);
     } catch (jsonError) {
-        // If it's not JSON, it might be a direct media stream or an error page
-        // For this app, we expect JSON, so failing to parse is an issue.
         return NextResponse.json({ 
             error: "API returned a non-JSON response.",
             data: responseText

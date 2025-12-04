@@ -6,8 +6,9 @@ import type { Platform } from "./home-screen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowLeft, School, Link as LinkIcon, Search, Loader2, PlayCircle, Download, Music, AlertTriangle, CheckCircle2, Lightbulb } from "lucide-react";
+import { ArrowLeft, School, Link as LinkIcon, Search, Loader2, PlayCircle, Download, Music, AlertTriangle, CheckCircle2, Lightbulb, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 
 interface PlatformScreenProps {
   platform: Platform;
@@ -24,11 +25,19 @@ type VideoData = {
     }[];
 }
 
+type DownloadProgress = {
+  id: string;
+  progress: number;
+  filename: string;
+} | null;
+
+
 export default function PlatformScreen({ platform, onGoBack }: PlatformScreenProps) {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [videoData, setVideoData] = useState<VideoData | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress>(null);
   const { toast } = useToast();
 
   const platformInstructions = {
@@ -68,6 +77,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     setLoading(true);
     setError(null);
     setVideoData(null);
+    setDownloadProgress(null);
 
     try {
       const proxyUrl = `/api/proxy?url=${encodeURIComponent(platform.apiUrl(url))}`;
@@ -138,12 +148,90 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
   const Icon = platform.icon;
 
   const handleDownload = async (downloadUrl: string, filename: string) => {
-    toast({
-      title: "Download Iniciando...",
-      description: "Seu download começará em uma nova aba.",
-    });
-    window.open(downloadUrl, '_blank');
-  };
+    if (downloadProgress) {
+        toast({
+            variant: "destructive",
+            title: "Aguarde!",
+            description: "Outro download já está em progresso.",
+        });
+        return;
+    }
+    
+    const downloadId = filename;
+    setDownloadProgress({ id: downloadId, progress: 0, filename });
+
+    try {
+        const proxyUrl = `/api/proxy?url=${encodeURIComponent(downloadUrl)}&download=true&filename=${encodeURIComponent(filename)}`;
+        const response = await fetch(proxyUrl);
+
+        if (!response.ok) {
+            throw new Error(`O servidor respondeu com o status ${response.status}`);
+        }
+
+        if (!response.body) {
+            throw new Error("O corpo da resposta está vazio.");
+        }
+
+        const contentLength = response.headers.get('content-length');
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        let loaded = 0;
+        
+        const reader = response.body.getReader();
+        const stream = new ReadableStream({
+            start(controller) {
+                function push() {
+                    reader.read().then(({ done, value }) => {
+                        if (done) {
+                            controller.close();
+                            return;
+                        }
+                        loaded += value.length;
+                        if (total > 0) {
+                            const progress = Math.round((loaded / total) * 100);
+                            setDownloadProgress(prev => prev && prev.id === downloadId ? {...prev, progress} : prev);
+                        }
+                        controller.enqueue(value);
+                        push();
+                    }).catch(error => {
+                        console.error('Erro no stream de download:', error);
+                        controller.error(error);
+                    })
+                }
+                push();
+            }
+        });
+
+        const newResponse = new Response(stream);
+        const blob = await newResponse.blob();
+        
+        const blobUrl = window.URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        
+        toast({
+            title: "Download Concluído!",
+            description: `${filename} foi baixado com sucesso.`,
+            className: "bg-green-500/10 border-green-500 text-white"
+        });
+
+        window.URL.revokeObjectURL(blobUrl);
+        a.remove();
+        setDownloadProgress(null);
+
+    } catch (err: any) {
+        setError("Falha no download: " + err.message);
+        toast({
+            variant: "destructive",
+            title: "Erro no Download",
+            description: "Não foi possível baixar o arquivo.",
+        });
+        setDownloadProgress(null);
+    }
+};
 
   return (
     <div className="p-6 animate-in fade-in duration-500">
@@ -182,10 +270,10 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder={`https://www.${platform.id}.com/...`}
                     className="pl-10 h-12 text-base focus-visible:ring-primary"
-                    disabled={loading}
+                    disabled={loading || !!downloadProgress}
                 />
             </div>
-            <Button type="submit" className="w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-pink-500 hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300" disabled={loading}>
+            <Button type="submit" className="w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-pink-500 hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300" disabled={loading || !!downloadProgress}>
                 {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Search className="mr-2 h-5 w-5" />}
                 Buscar Vídeo
             </Button>
@@ -235,13 +323,24 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
                     </video>
                 </div>
             </div>
+            
+            {downloadProgress && (
+              <div className="p-4 my-4 border rounded-lg border-accent/30 bg-accent/10">
+                <div className="flex items-center justify-between mb-2 text-sm">
+                  <span className="font-semibold text-accent-foreground">Baixando: {downloadProgress.filename}</span>
+                  <span className="font-mono text-accent">{downloadProgress.progress}%</span>
+                </div>
+                <Progress value={downloadProgress.progress} className="h-2 [&>div]:bg-accent" />
+              </div>
+            )}
 
             <div className="flex flex-col gap-4">
               {videoData.downloads.map((download, index) => (
                 <Button 
                     key={index}
                     onClick={() => handleDownload(download.url, download.filename)}
-                    className={`w-full h-12 text-base font-bold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5
+                    disabled={!!downloadProgress}
+                    className={`w-full h-12 text-base font-bold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed
                       ${download.type === 'video' ? 'bg-gradient-to-r from-accent to-blue-400 hover:shadow-accent/40' : 'bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:shadow-purple-500/40'}`
                     }
                 >

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Platform } from "./home-screen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -175,87 +175,88 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
   const handleDownload = async (downloadUrl: string, filename: string) => {
     if (downloadProgress) {
-        toast({
-            variant: "destructive",
-            title: "Aguarde!",
-            description: "Outro download já está em progresso.",
-        });
-        return;
+      toast({
+        variant: "destructive",
+        title: "Aguarde!",
+        description: "Outro download já está em progresso.",
+      });
+      return;
     }
-    
+
     const downloadId = filename;
     setDownloadProgress({ id: downloadId, progress: 0, filename });
 
     try {
-        const proxyUrl = `/api/proxy?url=${encodeURIComponent(downloadUrl)}&download=true&filename=${encodeURIComponent(filename)}`;
-        const response = await fetch(proxyUrl);
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(downloadUrl)}&download=true&filename=${encodeURIComponent(filename)}`;
+      const response = await fetch(proxyUrl);
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({error: `O servidor respondeu com o status ${response.status}`}));
-            throw new Error(errorData.error || `O servidor respondeu com o status ${response.status}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: `O servidor respondeu com o status ${response.status}` }));
+        throw new Error(errorData.error || `O servidor respondeu com o status ${response.status}`);
+      }
+
+      if (!response.body) {
+        throw new Error("O corpo da resposta está vazio.");
+      }
+
+      const contentLength = response.headers.get('content-length');
+      const total = contentLength ? parseInt(contentLength, 10) : 0;
+      let loaded = 0;
+
+      const reader = response.body.getReader();
+      const chunks: Uint8Array[] = [];
+
+      const read = async () => {
+        const { done, value } = await reader.read();
+        if (done) {
+          return;
         }
-
-        if (!response.body) {
-            throw new Error("O corpo da resposta está vazio.");
+        chunks.push(value);
+        loaded += value.length;
+        if (total > 0) {
+          const progress = Math.round((loaded / total) * 100);
+          setDownloadProgress(prev => prev && prev.id === downloadId ? { ...prev, progress } : prev);
         }
+        await read();
+      };
+      
+      await read();
 
-        const contentLength = response.headers.get('content-length');
-        const total = contentLength ? parseInt(contentLength, 10) : 0;
-        let loaded = 0;
-        
-        const reader = response.body.getReader();
-        const chunks: Uint8Array[] = [];
-        
-        // eslint-disable-next-line no-constant-condition
-        while(true) {
-            const { done, value } = await reader.read();
-            if (done) {
-                break;
-            }
-            chunks.push(value);
-            loaded += value.length;
-            if (total > 0) {
-                const progress = Math.round((loaded / total) * 100);
-                 setDownloadProgress(prev => prev && prev.id === downloadId ? {...prev, progress} : prev);
-            }
-        }
-        
-        setDownloadProgress(prev => prev && prev.id === downloadId ? {...prev, progress: 100} : prev);
+      setDownloadProgress(prev => prev && prev.id === downloadId ? { ...prev, progress: 100 } : prev);
 
-        const blob = new Blob(chunks);
-        const blobUrl = window.URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = blobUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        
-        toast({
-            title: "Download Concluído!",
-            description: `${filename} foi baixado com sucesso.`,
-            className: "bg-green-500/10 border-green-500 text-white"
-        });
+      const blob = new Blob(chunks);
+      const blobUrl = window.URL.createObjectURL(blob);
 
-        window.URL.revokeObjectURL(blobUrl);
-        a.remove();
-        
-        // Aguarde um pouco antes de limpar o progresso para o usuário ver o 100%
-        setTimeout(() => {
-          setDownloadProgress(null);
-        }, 1500);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+
+      toast({
+        title: "Download Concluído!",
+        description: `${filename} foi baixado com sucesso.`,
+        className: "bg-green-500/10 border-green-500 text-white"
+      });
+
+      window.URL.revokeObjectURL(blobUrl);
+      a.remove();
+
+      setTimeout(() => {
+        setDownloadProgress(null);
+      }, 1500);
 
     } catch (err: any) {
-        setError("Falha no download: " + err.message);
-        toast({
-            variant: "destructive",
-            title: "Erro no Download",
-            description: "Não foi possível baixar o arquivo.",
-        });
-        setDownloadProgress(null);
+      setError("Falha no download: " + err.message);
+      toast({
+        variant: "destructive",
+        title: "Erro no Download",
+        description: "Não foi possível baixar o arquivo.",
+      });
+      setDownloadProgress(null);
     }
-};
+  };
 
   return (
     <div className="p-6 animate-in fade-in duration-500">
@@ -321,8 +322,8 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       )}
 
       {videoData && !loading && (
-        <div className="p-6 rounded-lg bg-secondary animate-in slide-in-from-bottom-5 duration-500">
-            <Alert className="mb-6 border-green-500 bg-green-500/10 text-green-300">
+        <div className="p-6 pt-2 rounded-lg bg-secondary animate-in slide-in-from-bottom-5 duration-500">
+            <Alert className="mb-4 border-green-500 bg-green-500/10 text-green-300">
                 <CheckCircle2 className="h-4 w-4 !text-green-400" />
                 <AlertTitle className="!text-green-400 font-bold">Vídeo encontrado!</AlertTitle>
                 <AlertDescription>
@@ -330,12 +331,12 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
                 </AlertDescription>
             </Alert>
             
-            <div className="p-4 mb-6 rounded-lg bg-black/20 border border-border">
-                <h4 className="flex items-center gap-2 mb-3 font-semibold text-primary">
+            <div className="mb-4 rounded-lg bg-black/20 border border-border">
+                <h4 className="flex items-center gap-2 p-3 font-semibold text-primary">
                     <PlayCircle />
                     Preview do Vídeo
                 </h4>
-                <div className="overflow-hidden rounded-lg shadow-lg shadow-primary/10">
+                <div className="overflow-hidden rounded-b-lg">
                     <video
                         key={videoData.previewUrl}
                         className="w-full aspect-video bg-black"

@@ -248,7 +248,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       a.href = blobUrl;
       a.download = finalFilename;
       document.body.appendChild(a);
-a.click();
+      a.click();
 
       toast({
         title: "Download Concluído!",
@@ -279,11 +279,11 @@ a.click();
         <Button variant="ghost" size="icon" onClick={onGoBack} className="mr-3 rounded-full hover:bg-secondary">
           <ArrowLeft />
         </Button>
-        <h2 className="flex items-center gap-3 text-2xl font-bold">
-          <span className={`flex items-center justify-center w-8 h-8 rounded-md ${platform.iconColorClass}`}>
+        <h2 className="flex items-center flex-1 min-w-0 gap-3 text-2xl font-bold">
+          <span className={`flex items-center justify-center w-8 h-8 rounded-md ${platform.iconColorClass} flex-shrink-0`}>
             <Icon className="w-5 h-5" />
           </span>
-          Download {platform.name}
+          <span className="truncate">Download {platform.name}</span>
         </h2>
       </header>
 
@@ -351,7 +351,7 @@ a.click();
                     <PlayCircle />
                     Preview do Vídeo
                 </h4>
-                <div className="overflow-hidden rounded-b-lg">
+                <div className="aspect-w-16 aspect-h-9 overflow-hidden rounded-b-lg">
                     <video
                         key={videoData.previewUrl}
                         className="w-full h-full object-cover bg-black"

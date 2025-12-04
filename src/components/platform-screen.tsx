@@ -124,7 +124,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
              newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: "Baixar Vídeo do YouTube", filename: `${videoTitle}.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: "Baixar Vídeo", filename: `${videoTitle}.mp4`, type: 'video' }]
             };
         }
       } else if (platform.id === 'instagram') {
@@ -140,7 +140,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
              newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `instagram_video.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: "Baixar Vídeo", filename: `instagram_video.mp4`, type: 'video' }]
             };
         }
       } else if (platform.id === 'facebook') {
@@ -156,7 +156,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
             newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `facebook_video.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: "Baixar Vídeo", filename: `facebook_video.mp4`, type: 'video' }]
             };
         }
       }
@@ -248,7 +248,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       a.href = blobUrl;
       a.download = finalFilename;
       document.body.appendChild(a);
-      a.click();
+a.click();
 
       toast({
         title: "Download Concluído!",

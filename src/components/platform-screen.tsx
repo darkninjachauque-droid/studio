@@ -101,8 +101,8 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
       const data = await response.json();
 
-      if (data.error) {
-        throw new Error(data.error || data.msg || 'Não foi possível encontrar o vídeo. Verifique a URL e tente novamente.');
+      if (data.error || (data.status && data.status !== 'success' && data.status !== 200 && !data.data && !data.url)) {
+        throw new Error(data.error || data.msg || 'A API retornou um erro. Verifique a URL e tente novamente.');
       }
       
       if (typeof data === 'object' && data !== null && !Array.isArray(data) && Object.keys(data).length === 0) {
@@ -128,28 +128,22 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
           videoTitle = data.meta.title.replace(/[^a-zA-Z0-9 ]/g, "").replace(/\s+/g, '_');
         }
 
-        if (data.data && Array.isArray(data.data.url)) {
-          const sortedVideos = data.data.url
-            .filter((v: any) => v.quality && !v.noAudio)
+        const getBestVideo = (videos: any[]) => {
+          if (!Array.isArray(videos)) return null;
+          const sortedVideos = videos
+            .filter((v: any) => v.quality && !v.noAudio && v.url)
             .sort((a: any, b: any) => parseInt(b.quality) - parseInt(a.quality));
-          
-          if (sortedVideos.length > 0) {
-            videoUrl = sortedVideos[0].url;
-          }
+          return sortedVideos.length > 0 ? sortedVideos[0].url : null;
         }
-        
-        if (!videoUrl && Array.isArray(data.url) && data.url.length > 0) {
-            const sortedData = data.url.filter((v:any) => v.quality && !v.noAudio).sort((a:any,b:any) => parseInt(b.quality) - parseInt(a.quality));
-            if (sortedData.length > 0) {
-              videoUrl = sortedData[0]?.url || sortedData[0]?.link;
-            }
-        } else if (!videoUrl && data.data?.url) {
-            videoUrl = data.data.url;
-        } else if (!videoUrl && Array.isArray(data) && data.length > 0){
-             const sortedData = data.filter((v:any) => v.quality && !v.noAudio).sort((a:any,b:any) => parseInt(b.quality) - parseInt(a.quality));
-             if (sortedData.length > 0) {
-              videoUrl = sortedData[0]?.url || sortedData[0]?.link;
-            }
+
+        if (data.data?.url) {
+            videoUrl = getBestVideo(data.data.url) || '';
+        }
+        if (!videoUrl && data.url) {
+            videoUrl = getBestVideo(data.url) || '';
+        }
+        if (!videoUrl && Array.isArray(data)) {
+            videoUrl = getBestVideo(data) || '';
         }
 
         if (videoUrl) {
@@ -160,11 +154,12 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         }
       } else if (platform.id === 'instagram') {
          let videoUrl = '';
-         if (Array.isArray(data) && data.length > 0) {
-            const videoItem = data.find(item => item.url);
-            if(videoItem) videoUrl = videoItem.url;
+         if (Array.isArray(data) && data.length > 0 && data[0].url) {
+            videoUrl = data[0].url;
          } else if (data.url) {
             videoUrl = data.url;
+         } else if (data.data && Array.isArray(data.data) && data.data.length > 0 && data.data[0].url) {
+            videoUrl = data.data[0].url;
          }
         
         if (videoUrl) {
@@ -175,14 +170,9 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         }
       } else if (platform.id === 'facebook') {
         let videoUrl = '';
-        if (data.data?.links && data.data.links['HD']) {
-            videoUrl = data.data.links['HD'];
-        } else if (data.data?.links && data.data.links['SD']) {
-            videoUrl = data.data.links['SD'];
-        } else if (data.links && data.links['HD video']) {
-            videoUrl = data.links['HD video'];
-        } else if (data.links && data.links['Normal video']) {
-            videoUrl = data.links['Normal video'];
+        const links = data.data?.links || data.links;
+        if (links) {
+          videoUrl = links['HD video'] || links['HD'] || links['Normal video'] || links['SD'] || '';
         }
         
         if (videoUrl) {
@@ -307,7 +297,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
   return (
     <div className="p-6 animate-in fade-in duration-500">
       <header className="relative flex items-center w-full pb-4 mb-6 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={onGoBack} className="rounded-full hover:bg-secondary">
+        <Button variant="ghost" size="icon" onClick={onGoBack} className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full hover:bg-secondary">
           <ArrowLeft />
         </Button>
         <div className="flex-1 flex justify-center items-center gap-3">
@@ -318,7 +308,6 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
             Download {platform.name}
           </h2>
         </div>
-        <div className="w-10" /> {/* Spacer to balance the back button */}
       </header>
 
       <div className="p-5 mb-6 rounded-lg bg-secondary border-l-4 border-primary">
@@ -438,7 +427,3 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     </div>
   );
 }
-
-    
-
-    

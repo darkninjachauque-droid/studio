@@ -112,7 +112,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         const musicUrl = data.data.music;
         newVideoData = {
             previewUrl: videoUrl,
-            downloads: [{ url: videoUrl, label: "Baixar Vídeo Sem Marca d'água", filename: `tiktok_video.mp4`, type: 'video' }]
+            downloads: [{ url: videoUrl, label: "Baixar Vídeo", filename: `tiktok_video.mp4`, type: 'video' }]
         };
         if(musicUrl){
             newVideoData.downloads.push({ url: musicUrl, label: "Baixar Som do Vídeo", filename: `tiktok_audio.mp3`, type: 'music' });
@@ -265,6 +265,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
       toast({
         title: "Download Concluído!",
+        description: ``,
         className: "bg-green-500/10 border-green-500 text-white"
       });
 
@@ -419,5 +420,3 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     </div>
   );
 }
-
-    

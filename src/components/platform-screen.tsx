@@ -288,7 +288,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
   return (
     <div className="p-6 animate-in fade-in duration-500">
       <header className="relative flex items-center pb-4 mb-6 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={onGoBack} className="absolute left-0 rounded-full hover:bg-secondary">
+        <Button variant="ghost" size="icon" onClick={onGoBack} className="absolute left-0 top-0 rounded-full hover:bg-secondary">
           <ArrowLeft />
         </Button>
         <h2 className="flex items-center justify-center flex-1 w-full gap-3 text-2xl font-bold">

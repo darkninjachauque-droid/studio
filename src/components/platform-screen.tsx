@@ -105,7 +105,6 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         throw new Error(data.error || data.msg || 'Não foi possível encontrar o vídeo. Verifique a URL e tente novamente.');
       }
       
-      // Checa se a resposta é um objeto vazio
       if (typeof data === 'object' && data !== null && !Array.isArray(data) && Object.keys(data).length === 0) {
         throw new Error('A API retornou uma resposta vazia. O vídeo pode não estar disponível ou a URL está incorreta.');
       }
@@ -129,8 +128,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
           videoTitle = data.meta.title.replace(/[^a-zA-Z0-9 ]/g, "").replace(/\s+/g, '_');
         }
 
-        // Nova lógica para extrair URL do youtube
-        if (data.data && Array.isArray(data.data.url) && data.data.url.length > 0) {
+        if (data.data && Array.isArray(data.data.url)) {
           const sortedVideos = data.data.url
             .filter((v: any) => v.quality && !v.noAudio)
             .sort((a: any, b: any) => parseInt(b.quality) - parseInt(a.quality));
@@ -139,15 +137,19 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
             videoUrl = sortedVideos[0].url;
           }
         }
-        // Fallback para a lógica antiga, caso a estrutura da API mude novamente
-        else if (Array.isArray(data.url) && data.url.length > 0) {
-            const sortedData = data.url.sort((a:any,b:any) => parseInt(b.quality) - parseInt(a.quality));
-            videoUrl = sortedData[0]?.url || sortedData[0]?.link;
-        } else if (data.data?.url) {
+        
+        if (!videoUrl && Array.isArray(data.url) && data.url.length > 0) {
+            const sortedData = data.url.filter((v:any) => v.quality && !v.noAudio).sort((a:any,b:any) => parseInt(b.quality) - parseInt(a.quality));
+            if (sortedData.length > 0) {
+              videoUrl = sortedData[0]?.url || sortedData[0]?.link;
+            }
+        } else if (!videoUrl && data.data?.url) {
             videoUrl = data.data.url;
-        } else if (Array.isArray(data) && data.length > 0){
-             const sortedData = data.sort((a:any,b:any) => parseInt(b.quality) - parseInt(a.quality));
-            videoUrl = sortedData[0]?.url || sortedData[0]?.link;
+        } else if (!videoUrl && Array.isArray(data) && data.length > 0){
+             const sortedData = data.filter((v:any) => v.quality && !v.noAudio).sort((a:any,b:any) => parseInt(b.quality) - parseInt(a.quality));
+             if (sortedData.length > 0) {
+              videoUrl = sortedData[0]?.url || sortedData[0]?.link;
+            }
         }
 
         if (videoUrl) {
@@ -173,7 +175,11 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         }
       } else if (platform.id === 'facebook') {
         let videoUrl = '';
-        if (data.links && data.links['HD video']) {
+        if (data.data?.links && data.data.links['HD']) {
+            videoUrl = data.data.links['HD'];
+        } else if (data.data?.links && data.data.links['SD']) {
+            videoUrl = data.data.links['SD'];
+        } else if (data.links && data.links['HD video']) {
             videoUrl = data.links['HD video'];
         } else if (data.links && data.links['Normal video']) {
             videoUrl = data.links['Normal video'];
@@ -432,3 +438,5 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     </div>
   );
 }
+
+    

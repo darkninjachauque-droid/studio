@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'VideoVerse Download',
+  title: 'BAIXA VÍDEOS',
   description: 'Baixe vídeos de forma rápida e simples',
 };
 

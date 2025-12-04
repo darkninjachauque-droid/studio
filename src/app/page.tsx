@@ -25,7 +25,7 @@ export default function Home() {
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent" />
           <h1 className="flex items-center justify-center gap-3 text-4xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             <CloudDownload className="text-primary" size={36} />
-            VideoVerse
+            BAIXA VÍDEOS
           </h1>
           <p className="mt-2 text-muted-foreground">
             Baixe vídeos de forma rápida e simples

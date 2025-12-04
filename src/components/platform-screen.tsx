@@ -223,20 +223,22 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
                 </AlertDescription>
             </Alert>
             
-            <div className="p-4 mb-6 rounded-lg bg-background">
-                <h4 className="flex items-center gap-2 mb-3 font-semibold">
-                    <PlayCircle className="text-primary" />
+            <div className="p-4 mb-6 rounded-lg bg-black/20 border border-border">
+                <h4 className="flex items-center gap-2 mb-3 font-semibold text-primary">
+                    <PlayCircle />
                     Preview do Vídeo
                 </h4>
-                <video
-                    key={videoData.previewUrl}
-                    className="w-full rounded-md aspect-video bg-black"
-                    controls
-                    playsInline
-                >
-                    <source src={videoData.previewUrl} type="video/mp4" />
-                    Seu navegador não suporta o elemento de vídeo.
-                </video>
+                <div className="overflow-hidden rounded-lg shadow-lg shadow-primary/10">
+                    <video
+                        key={videoData.previewUrl}
+                        className="w-full aspect-video bg-black"
+                        controls
+                        playsInline
+                    >
+                        <source src={videoData.previewUrl} type="video/mp4" />
+                        Seu navegador não suporta o elemento de vídeo.
+                    </video>
+                </div>
             </div>
 
             <div className="flex flex-col gap-4">

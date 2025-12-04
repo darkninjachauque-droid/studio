@@ -1,9 +1,10 @@
 "use client";
 
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
-import { Instagram, Facebook, Youtube, Info } from "lucide-react";
+import { Instagram, Facebook, Youtube, Info, Download, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { TiktokIcon } from "@/components/icons";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 export type Platform = {
   id: "instagram" | "facebook" | "tiktok" | "youtube";
@@ -53,9 +54,46 @@ interface HomeScreenProps {
   onPlatformSelect: (platform: Platform) => void;
 }
 
+const AppInstallBanner = ({ onDismiss }: { onDismiss: () => void }) => {
+  return (
+    <div className="relative p-4 mb-6 rounded-lg bg-gradient-to-tr from-primary/20 via-primary/10 to-accent/10 border-l-4 border-primary animate-in fade-in-50 slide-in-from-bottom-5 duration-700">
+      <Button variant="ghost" size="icon" className="absolute w-6 h-6 top-2 right-2 text-primary/70 hover:text-primary" onClick={onDismiss}>
+        <X size={16} />
+      </Button>
+      <h3 className="mb-2 text-lg font-bold text-primary">Baixe nosso Aplicativo!</h3>
+      <p className="mb-4 text-sm text-primary/80">
+        Tenha a melhor experiência e baixe vídeos ilimitados diretamente no seu celular.
+      </p>
+      <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Download className="mr-2" />
+        Baixar o App
+      </Button>
+    </div>
+  );
+};
+
 export default function HomeScreen({ onPlatformSelect }: HomeScreenProps) {
+  const [showBanner, setShowBanner] = useState(false);
+
+  useEffect(() => {
+    const bannerDismissed = localStorage.getItem('appBannerDismissed');
+    if (!bannerDismissed) {
+      const timer = setTimeout(() => {
+        setShowBanner(true);
+      }, 1000); 
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleDismissBanner = () => {
+    localStorage.setItem('appBannerDismissed', 'true');
+    setShowBanner(false);
+  };
+
   return (
     <div className="p-6 animate-in fade-in duration-500">
+      {showBanner && <AppInstallBanner onDismiss={handleDismissBanner} />}
+      
       <h2 className="relative pb-3 mb-6 text-2xl font-bold text-center">
         Escolha a Plataforma
         <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-primary to-accent rounded-full" />

@@ -86,9 +86,21 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     try {
       const proxyUrl = `/api/proxy?url=${encodeURIComponent(platform.apiUrl(cleanUrl))}`;
       const response = await fetch(proxyUrl);
+      
+      if (!response.ok) {
+        let errorMsg = `Não foi possível encontrar o vídeo. Verifique a URL e tente novamente. (Status: ${response.status})`;
+        try {
+            const errorData = await response.json();
+            errorMsg = errorData.error || errorData.msg || errorMsg;
+        } catch (e) {
+            // A resposta pode não ser JSON, usamos a mensagem padrão
+        }
+        throw new Error(errorMsg);
+      }
+
       const data = await response.json();
 
-      if (!response.ok || data.error || !data) {
+      if (data.error || !data) {
         throw new Error(data.error || data.msg || 'Não foi possível encontrar o vídeo. Verifique a URL e tente novamente.');
       }
       
@@ -99,7 +111,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         const musicUrl = data.data.music;
         newVideoData = {
             previewUrl: videoUrl,
-            downloads: [{ url: videoUrl, label: "Baixar Vídeo Sem Marca d'Água", filename: `tiktok_video.mp4`, type: 'video' }]
+            downloads: [{ url: videoUrl, label: "Baixar Vídeo Sem Marca d'água", filename: `tiktok_video.mp4`, type: 'video' }]
         };
         if(musicUrl){
             newVideoData.downloads.push({ url: musicUrl, label: "Baixar Som do Vídeo", filename: `tiktok_audio.mp3`, type: 'music' });
@@ -275,15 +287,15 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
   return (
     <div className="p-6 animate-in fade-in duration-500">
-      <header className="flex items-center pb-4 mb-6 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={onGoBack} className="mr-3 rounded-full hover:bg-secondary">
+      <header className="relative flex items-center pb-4 mb-6 border-b border-border">
+        <Button variant="ghost" size="icon" onClick={onGoBack} className="absolute left-0 rounded-full hover:bg-secondary">
           <ArrowLeft />
         </Button>
-        <h2 className="flex items-center flex-1 min-w-0 gap-3 text-2xl font-bold">
+        <h2 className="flex items-center justify-center flex-1 w-full gap-3 text-2xl font-bold">
           <span className={`flex items-center justify-center w-8 h-8 rounded-md ${platform.iconColorClass} flex-shrink-0`}>
             <Icon className="w-5 h-5" />
           </span>
-          <span className="truncate">Download {platform.name}</span>
+          <span>Download {platform.name}</span>
         </h2>
       </header>
 

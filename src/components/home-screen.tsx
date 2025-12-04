@@ -95,7 +95,8 @@ export default function HomeScreen({ onPlatformSelect }: HomeScreenProps) {
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
-    const bannerDismissed = localStorage.getItem('appBannerDismissed');
+    // Math.random() can cause hydration mismatches
+    const bannerDismissed = typeof window !== 'undefined' ? localStorage.getItem('appBannerDismissed') : null;
     if (!bannerDismissed) {
       const timer = setTimeout(() => {
         setShowBanner(true);

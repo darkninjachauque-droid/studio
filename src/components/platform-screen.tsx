@@ -6,7 +6,7 @@ import type { Platform } from "./home-screen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowLeft, School, Link as LinkIcon, Search, Loader2, PlayCircle, Download, Music, AlertTriangle, CheckCircle2, Lightbulb, XCircle } from "lucide-react";
+import { ArrowLeft, School, Link as LinkIcon, Search, Loader2, PlayCircle, Download, Music, AlertTriangle, CheckCircle2, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 
@@ -84,7 +84,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       const response = await fetch(proxyUrl);
       const data = await response.json();
 
-      if (!response.ok || data.error || (Array.isArray(data) && data.length === 0) || (typeof data !== 'object')) {
+      if (!response.ok || data.error || !data) {
         throw new Error(data.error || data.msg || 'Não foi possível encontrar o vídeo. Verifique a URL e tente novamente.');
       }
       
@@ -102,13 +102,15 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
             newVideoData.downloads.push({ url: musicUrl, label: "Baixar Som do Vídeo", filename: `tiktok_music_${timestamp}.mp3`, type: 'music' });
         }
       } else if (platform.id === 'youtube') {
-        // Youtube pode retornar um array de qualidades ou um objeto direto
         let videoUrl = '';
-        if (Array.isArray(data) && data.length > 0) {
-            const sortedData = data.sort((a,b) => parseInt(b.quality) - parseInt(a.quality));
+        if (Array.isArray(data.data) && data.data.length > 0) {
+            const sortedData = data.data.sort((a:any,b:any) => parseInt(b.quality) - parseInt(a.quality));
             videoUrl = sortedData[0]?.url || sortedData[0]?.link;
-        } else if (data.url) { // Fallback para objeto direto
-            videoUrl = data.url;
+        } else if (data.data?.url) {
+            videoUrl = data.data.url;
+        } else if (Array.isArray(data) && data.length > 0){
+             const sortedData = data.sort((a:any,b:any) => parseInt(b.quality) - parseInt(a.quality));
+            videoUrl = sortedData[0]?.url || sortedData[0]?.link;
         }
 
         if (videoUrl) {
@@ -117,17 +119,36 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
                 downloads: [{ url: videoUrl, label: "Baixar Vídeo do YouTube", filename: `youtube_video_${timestamp}.mp4`, type: 'video' }]
             };
         }
-      } else if ((platform.id === 'instagram' || platform.id === 'facebook')) {
-         // Instagram e Facebook geralmente retornam um array
-        let videoUrl = '';
-        if (Array.isArray(data) && data.length > 0 && data[0]?.url) {
-            videoUrl = data[0].url;
-        } else if (data.data?.url) { // Fallback para objeto
-            videoUrl = data.data.url;
-        }
+      } else if (platform.id === 'instagram') {
+         let videoUrl = '';
+         // A resposta pode ser um array de objetos, cada um com uma URL
+         if (Array.isArray(data) && data.length > 0 && data[0].url) {
+             videoUrl = data[0].url;
+         } else if (data.data?.url) { // Ou um objeto com a propriedade data.url
+             videoUrl = data.data.url;
+         } else if (typeof data[0] === 'string') { // Ou um array de strings
+             videoUrl = data[0];
+         }
         
         if (videoUrl) {
              newVideoData = {
+                previewUrl: videoUrl,
+                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `${platform.id}_video_${timestamp}.mp4`, type: 'video' }]
+            };
+        }
+      } else if (platform.id === 'facebook') {
+        let videoUrl = '';
+        // A API do facebook retorna um objeto `links`
+        if (data.links && data.links['HD video']) {
+            videoUrl = data.links['HD video'];
+        } else if (data.links && data.links['Normal video']) {
+            videoUrl = data.links['Normal video'];
+        } else if (Array.isArray(data) && data.length > 0 && data[0].url) {
+             videoUrl = data[0].url;
+        }
+        
+        if (videoUrl) {
+            newVideoData = {
                 previewUrl: videoUrl,
                 downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `${platform.id}_video_${timestamp}.mp4`, type: 'video' }]
             };
@@ -137,11 +158,13 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       if (newVideoData) {
         setVideoData(newVideoData);
       } else {
+        console.error("Dados recebidos da API:", data);
         throw new Error('Não foi possível processar os dados do vídeo. O formato da resposta pode ter mudado.');
       }
 
     } catch (err: any) {
       setError(err.message || "Ocorreu um erro. Verifique sua conexão e a URL do vídeo.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -366,5 +389,3 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     </div>
   );
 }
-
-    

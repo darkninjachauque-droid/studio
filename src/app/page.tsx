@@ -18,10 +18,14 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background text-foreground">
-      <div className="w-full max-w-md bg-card rounded-2xl shadow-2xl shadow-primary/10 overflow-hidden border border-border">
+    <div 
+      className="flex flex-col items-center justify-center min-h-screen p-4 bg-background text-foreground bg-cover bg-center"
+      style={{ backgroundImage: "url('https://i.ibb.co/vC4zx7Zr/Screenshot-20251204-193610-Gallery.jpg')" }}
+    >
+      <div className="absolute inset-0 bg-black/50 z-0" />
+      <div className="w-full max-w-md bg-card/80 backdrop-blur-sm rounded-2xl shadow-2xl shadow-primary/10 overflow-hidden border border-border z-10">
         {/* Header */}
-        <header className="relative p-6 text-center border-b border-border bg-card">
+        <header className="relative p-6 text-center border-b border-border bg-transparent">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent" />
           <h1 className="flex items-center justify-center gap-3 text-4xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             <CloudDownload className="text-primary" size={36} />
@@ -45,7 +49,7 @@ export default function Home() {
         </main>
         
         {/* Footer */}
-        <footer className="p-6 text-sm text-center border-t text-muted-foreground border-border">
+        <footer className="p-6 text-sm text-center border-t text-muted-foreground border-border bg-transparent">
             <div className="flex items-center justify-center gap-2 mb-2 text-base font-bold text-accent">
                 <Code size={20} /> DESENVOLVIDO PELO HÉLIO TECH
             </div>

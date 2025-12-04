@@ -144,12 +144,17 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         }
       } else if (platform.id === 'instagram') {
          let videoUrl = '';
-         if (Array.isArray(data) && data.length > 0 && data[0].url) {
-             videoUrl = data[0].url;
+         // Tenta múltiplos formatos de resposta para o Instagram
+         if (Array.isArray(data) && data.length > 0) {
+             if (typeof data[0] === 'string') {
+                 videoUrl = data[0];
+             } else if (data[0].url) {
+                 videoUrl = data[0].url;
+             }
          } else if (data.data?.url) {
              videoUrl = data.data.url;
-         } else if (typeof data[0] === 'string') {
-             videoUrl = data[0];
+         } else if (data.url) {
+             videoUrl = data.url;
          }
         
         if (videoUrl) {
@@ -184,7 +189,6 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
     } catch (err: any) {
       setError(err.message || "Ocorreu um erro. Verifique sua conexão e a URL do vídeo.");
-      console.error(err);
     } finally {
       setLoading(false);
     }

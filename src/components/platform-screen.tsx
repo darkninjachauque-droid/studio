@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -45,25 +44,25 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       "Abra o TikTok e encontre o vídeo desejado",
       "Clique em 'Compartilhar' e copie o link",
       "Cole o link abaixo e clique em 'Buscar'",
-      "Assista o preview e clique em 'Baixar Vídeo'",
+      "Aguarde o download e o vídeo será salvo",
     ],
     instagram: [
       "Abra o Instagram e encontre o vídeo ou Reels",
       "Clique nos três pontos e copie o link",
       "Cole o link abaixo e clique em 'Buscar'",
-      "Assista o preview e baixe o vídeo",
+      "Aguarde o download e o vídeo será salvo",
     ],
     facebook: [
       "Abra o Facebook e encontre o vídeo",
       "Clique nos três pontos e copie o link",
       "Cole o link abaixo e clique em 'Buscar'",
-      "Assista o preview e baixe o vídeo",
+      "Aguarde o download e o vídeo será salvo",
     ],
     youtube: [
       "Abra o YouTube e encontre o vídeo",
       "Copie o link da barra de endereços",
       "Cole o link abaixo e clique em 'Buscar'",
-      "Assista o preview e baixe o vídeo",
+      "Aguarde o download e o vídeo será salvo",
     ]
   };
 
@@ -96,13 +95,18 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         const musicUrl = data.data.music;
         newVideoData = {
             previewUrl: videoUrl,
-            downloads: [{ url: videoUrl, label: "Baixar Vídeo Sem Marca d'Água", filename: `tiktok_video_${timestamp}.mp4`, type: 'video' }]
+            downloads: [{ url: videoUrl, label: "Baixar Vídeo Sem Marca d'Água", filename: `video.mp4`, type: 'video' }]
         };
         if(musicUrl){
-            newVideoData.downloads.push({ url: musicUrl, label: "Baixar Som do Vídeo", filename: `tiktok_music_${timestamp}.mp3`, type: 'music' });
+            newVideoData.downloads.push({ url: musicUrl, label: "Baixar Som do Vídeo", filename: `audio.mp3`, type: 'music' });
         }
       } else if (platform.id === 'youtube') {
         let videoUrl = '';
+        let videoTitle = "video";
+        if (data.meta?.title) {
+          videoTitle = data.meta.title.replace(/[^a-zA-Z0-9 ]/g, "").replace(/\s+/g, '_');
+        }
+
         if (Array.isArray(data.data) && data.data.length > 0) {
             const sortedData = data.data.sort((a:any,b:any) => parseInt(b.quality) - parseInt(a.quality));
             videoUrl = sortedData[0]?.url || sortedData[0]?.link;
@@ -116,29 +120,27 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
              newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: "Baixar Vídeo do YouTube", filename: `youtube_video_${timestamp}.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: "Baixar Vídeo do YouTube", filename: `${videoTitle}.mp4`, type: 'video' }]
             };
         }
       } else if (platform.id === 'instagram') {
          let videoUrl = '';
-         // A resposta pode ser um array de objetos, cada um com uma URL
          if (Array.isArray(data) && data.length > 0 && data[0].url) {
              videoUrl = data[0].url;
-         } else if (data.data?.url) { // Ou um objeto com a propriedade data.url
+         } else if (data.data?.url) {
              videoUrl = data.data.url;
-         } else if (typeof data[0] === 'string') { // Ou um array de strings
+         } else if (typeof data[0] === 'string') {
              videoUrl = data[0];
          }
         
         if (videoUrl) {
              newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `${platform.id}_video_${timestamp}.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `video.mp4`, type: 'video' }]
             };
         }
       } else if (platform.id === 'facebook') {
         let videoUrl = '';
-        // A API do facebook retorna um objeto `links`
         if (data.links && data.links['HD video']) {
             videoUrl = data.links['HD video'];
         } else if (data.links && data.links['Normal video']) {
@@ -150,7 +152,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
             newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `${platform.id}_video_${timestamp}.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `video.mp4`, type: 'video' }]
             };
         }
       }
@@ -190,7 +192,8 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         const response = await fetch(proxyUrl);
 
         if (!response.ok) {
-            throw new Error(`O servidor respondeu com o status ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `O servidor respondeu com o status ${response.status}`);
         }
 
         if (!response.body) {
@@ -210,12 +213,14 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
                             controller.close();
                             return;
                         }
-                        loaded += value.length;
-                        if (total > 0) {
-                            const progress = Math.round((loaded / total) * 100);
-                            setDownloadProgress(prev => prev && prev.id === downloadId ? {...prev, progress} : prev);
+                        if(value){
+                          loaded += value.length;
+                          if (total > 0) {
+                              const progress = Math.round((loaded / total) * 100);
+                              setDownloadProgress(prev => prev && prev.id === downloadId ? {...prev, progress} : prev);
+                          }
+                          controller.enqueue(value);
                         }
-                        controller.enqueue(value);
                         push();
                     }).catch(error => {
                         console.error('Erro no stream de download:', error);

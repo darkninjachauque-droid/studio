@@ -105,10 +105,6 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         throw new Error(data.error || data.msg || 'A API retornou um erro. Verifique a URL e tente novamente.');
       }
       
-      if (typeof data === 'object' && data !== null && !Array.isArray(data) && Object.keys(data).length === 0) {
-        throw new Error('A API retornou uma resposta vazia. O vídeo pode não estar disponível ou a URL está incorreta.');
-      }
-      
       let newVideoData: VideoData | null = null;
       
       if (platform.id === 'tiktok' && data.data?.play) {
@@ -121,60 +117,36 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if(musicUrl){
             newVideoData.downloads.push({ url: musicUrl, label: "Baixar Som do Vídeo", filename: `tiktok_audio.mp3`, type: 'music' });
         }
-      } else if (platform.id === 'youtube') {
+      } else if (platform.id === 'youtube' && data.url) {
         let videoUrl = '';
         let videoTitle = "video";
         if (data.meta?.title) {
           videoTitle = data.meta.title.replace(/[^a-zA-Z0-9 ]/g, "").replace(/\s+/g, '_');
         }
 
-        const getBestVideo = (videos: any[]) => {
-          if (!Array.isArray(videos)) return null;
-          const sortedVideos = videos
-            .filter((v: any) => v.quality && !v.noAudio && v.url)
-            .sort((a: any, b: any) => parseInt(b.quality) - parseInt(a.quality));
-          return sortedVideos.length > 0 ? sortedVideos[0].url : null;
+        if (Array.isArray(data.url) && data.url.length > 0) {
+            const sortedVideos = data.url
+                .filter((v: any) => v.quality && !v.noAudio)
+                .sort((a: any, b: any) => parseInt(b.quality) - parseInt(a.quality));
+            
+            if (sortedVideos.length > 0) {
+                videoUrl = sortedVideos[0].url;
+            }
         }
-
-        if (data.data?.url) {
-            videoUrl = getBestVideo(data.data.url) || '';
-        }
-        if (!videoUrl && data.url) {
-            videoUrl = getBestVideo(data.url) || '';
-        }
-        if (!videoUrl && Array.isArray(data)) {
-            videoUrl = getBestVideo(data) || '';
-        }
-
+        
         if (videoUrl) {
              newVideoData = {
                 previewUrl: videoUrl,
                 downloads: [{ url: videoUrl, label: "Baixar Vídeo", filename: `${videoTitle}.mp4`, type: 'video' }]
             };
         }
-      } else if (platform.id === 'instagram') {
-         let videoUrl = '';
-         if (Array.isArray(data) && data.length > 0 && data[0].url) {
-            videoUrl = data[0].url;
-         } else if (data.url) {
-            videoUrl = data.url;
-         } else if (data.data && Array.isArray(data.data) && data.data.length > 0 && data.data[0].url) {
-            videoUrl = data.data[0].url;
-         }
-        
-        if (videoUrl) {
-             newVideoData = {
-                previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: "Baixar Vídeo", filename: `instagram_video.mp4`, type: 'video' }]
-            };
-        }
-      } else if (platform.id === 'facebook') {
-        let videoUrl = '';
-        const links = data.data?.links || data.links;
-        if (links) {
-          videoUrl = links['HD video'] || links['HD'] || links['Normal video'] || links['SD'] || '';
-        }
-        
+      } else if (platform.id === 'instagram' && data.data && data.data.length > 0) {
+        newVideoData = {
+            previewUrl: data.data[0].url,
+            downloads: [{ url: data.data[0].url, label: "Baixar Vídeo", filename: `instagram_video.mp4`, type: 'video' }]
+        };
+      } else if (platform.id === 'facebook' && data.data.links) {
+        const videoUrl = data.data.links['HD video'] || data.data.links['Normal video'];
         if (videoUrl) {
             newVideoData = {
                 previewUrl: videoUrl,

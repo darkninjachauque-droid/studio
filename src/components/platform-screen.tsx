@@ -100,10 +100,8 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       }
 
       const data = await response.json();
-      
-      const isEmptyResponse = !data || Object.keys(data).length === 0;
 
-      if (data.error || isEmptyResponse) {
+      if (data.error) {
         throw new Error(data.error || data.msg || 'Não foi possível encontrar o vídeo. Verifique a URL e tente novamente.');
       }
       
@@ -144,17 +142,8 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         }
       } else if (platform.id === 'instagram') {
          let videoUrl = '';
-         // Tenta múltiplos formatos de resposta para o Instagram
          if (Array.isArray(data) && data.length > 0) {
-             if (typeof data[0] === 'string') {
-                 videoUrl = data[0];
-             } else if (data[0].url) {
-                 videoUrl = data[0].url;
-             }
-         } else if (data.data?.url) {
-             videoUrl = data.data.url;
-         } else if (data.url) {
-             videoUrl = data.url;
+            videoUrl = data[0].url || data[0];
          }
         
         if (videoUrl) {
@@ -169,8 +158,6 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
             videoUrl = data.links['HD video'];
         } else if (data.links && data.links['Normal video']) {
             videoUrl = data.links['Normal video'];
-        } else if (Array.isArray(data) && data.length > 0 && data[0].url) {
-             videoUrl = data[0].url;
         }
         
         if (videoUrl) {

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -136,19 +137,55 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
   const Icon = platform.icon;
 
-  const handleDownload = (downloadUrl: string, filename: string) => {
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.target = '_blank';
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (downloadUrl: string, filename: string) => {
     toast({
-      title: "Download Iniciado!",
-      description: "Seu arquivo está sendo baixado.",
+      title: "Download Iniciando...",
+      description: "Aguarde, seu arquivo está sendo preparado.",
     });
-  }
+
+    try {
+      // Usamos o proxy para buscar o vídeo, o que evita problemas de CORS
+      // e nos dá mais controle sobre o fluxo de download.
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(downloadUrl)}`;
+      const response = await fetch(proxyUrl);
+
+      if (!response.ok) {
+        throw new Error(`O servidor respondeu com o status ${response.status}`);
+      }
+
+      // Converte a resposta em um blob (um objeto de arquivo)
+      const blob = await response.blob();
+      
+      // Cria uma URL temporária para o blob. Essa URL só existe no navegador.
+      const url = window.URL.createObjectURL(blob);
+      
+      // Cria um link invisível, define o atributo de download e clica nele
+      // para iniciar o download sem sair da página.
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Limpa o link e a URL do objeto para liberar memória.
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        variant: "default",
+        title: "Download Concluído!",
+        description: `${filename} foi salvo no seu dispositivo.`,
+      });
+
+    } catch (error) {
+      console.error("Erro no download:", error);
+      toast({
+        variant: "destructive",
+        title: "Falha no Download",
+        description: "Não foi possível baixar o arquivo. Tente novamente.",
+      });
+    }
+  };
 
   return (
     <div className="p-6 animate-in fade-in duration-500">
@@ -267,7 +304,6 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
           </AlertDescription>
         </Alert>
       )}
-
     </div>
   );
 }

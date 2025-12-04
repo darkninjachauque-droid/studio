@@ -68,8 +68,13 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!url) {
-      setError("Por favor, insira a URL do vídeo!");
+
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const extractedUrls = url.match(urlRegex);
+    const cleanUrl = extractedUrls ? extractedUrls[0] : null;
+
+    if (!cleanUrl) {
+      setError("Por favor, insira uma URL de vídeo válida!");
       return;
     }
 
@@ -79,7 +84,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     setDownloadProgress(null);
 
     try {
-      const proxyUrl = `/api/proxy?url=${encodeURIComponent(platform.apiUrl(url))}`;
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(platform.apiUrl(cleanUrl))}`;
       const response = await fetch(proxyUrl);
       const data = await response.json();
 
@@ -341,7 +346,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
                     <PlayCircle />
                     Preview do Vídeo
                 </h4>
-                <div className="overflow-hidden rounded-b-lg aspect-w-16 aspect-h-9">
+                <div className="overflow-hidden rounded-b-lg">
                     <video
                         key={videoData.previewUrl}
                         className="w-full h-full object-cover bg-black"

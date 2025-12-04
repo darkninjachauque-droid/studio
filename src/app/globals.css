@@ -57,4 +57,16 @@
   body {
     @apply bg-background text-foreground;
   }
+  @keyframes blink-colors {
+    0%, 100% {
+      color: hsl(var(--primary));
+    }
+    50% {
+      color: hsl(var(--accent));
+    }
+  }
+
+  .animate-blink-colors {
+    animation: blink-colors 2s infinite;
+  }
 }

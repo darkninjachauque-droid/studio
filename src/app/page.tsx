@@ -25,7 +25,7 @@ export default function Home() {
         {/* Header */}
         <header className="relative p-6 text-center border-b border-border bg-transparent">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent" />
-          <h1 className="flex items-center justify-center gap-3 text-4xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1 className="flex items-center justify-center gap-3 text-4xl font-extrabold animate-blink-colors">
             <CloudDownload className="text-primary" size={36} />
             BAIXA VÍDEOS
           </h1>

@@ -189,8 +189,8 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     }
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const fileExtension = originalFilename.split('.').pop();
-    const baseFilename = originalFilename.replace(`.${fileExtension}`, '');
+    const fileExtension = originalFilename.split('.').pop() || 'mp4';
+    const baseFilename = originalFilename.replace(/\.[^/.]+$/, "") || platform.id;
     const finalFilename = `${baseFilename}_${timestamp}.${fileExtension}`;
 
     setDownloadProgress({ id: finalFilename, progress: 0, filename: finalFilename });
@@ -211,26 +211,36 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       const contentLength = response.headers.get('content-length');
       const total = contentLength ? parseInt(contentLength, 10) : 0;
       let loaded = 0;
-
-      const reader = response.body.getReader();
-      const chunks: Uint8Array[] = [];
       
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-        chunks.push(value);
-        loaded += value.length;
-        if (total > 0) {
-          const progress = Math.round((loaded / total) * 100);
-          setDownloadProgress(prev => prev && prev.id === finalFilename ? { ...prev, progress } : prev);
-        }
-      }
+      const reader = response.body.getReader();
+      const stream = new ReadableStream({
+        start(controller) {
+          function push() {
+            reader.read().then(({ done, value }) => {
+              if (done) {
+                controller.close();
+                return;
+              }
+              loaded += value.length;
+              if (total > 0) {
+                  const progress = Math.round((loaded / total) * 100);
+                  setDownloadProgress(prev => prev ? { ...prev, progress } : null);
+              }
+              controller.enqueue(value);
+              push();
+            }).catch(error => {
+                console.error(error);
+                controller.error(error);
+            });
+          }
+          push();
+        },
+      });
 
-      setDownloadProgress(prev => prev && prev.id === finalFilename ? { ...prev, progress: 100 } : prev);
+      const blob = await new Response(stream).blob();
+      
+      setDownloadProgress(prev => prev ? { ...prev, progress: 100 } : null);
 
-      const blob = new Blob(chunks);
       const blobUrl = window.URL.createObjectURL(blob);
 
       const a = document.createElement('a');
@@ -242,7 +252,6 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
       toast({
         title: "Download Concluído!",
-        description: `${finalFilename} foi baixado com sucesso.`,
         className: "bg-green-500/10 border-green-500 text-white"
       });
 
@@ -342,7 +351,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
                     <PlayCircle />
                     Preview do Vídeo
                 </h4>
-                <div className="overflow-hidden rounded-b-lg aspect-w-16 aspect-h-9">
+                <div className="overflow-hidden rounded-b-lg">
                     <video
                         key={videoData.previewUrl}
                         className="w-full h-full object-cover bg-black"

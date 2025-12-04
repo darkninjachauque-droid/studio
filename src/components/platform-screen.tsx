@@ -100,8 +100,10 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       }
 
       const data = await response.json();
+      
+      const isEmptyResponse = !data || Object.keys(data).length === 0;
 
-      if (data.error || !data) {
+      if (data.error || isEmptyResponse) {
         throw new Error(data.error || data.msg || 'Não foi possível encontrar o vídeo. Verifique a URL e tente novamente.');
       }
       
@@ -177,7 +179,6 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       if (newVideoData) {
         setVideoData(newVideoData);
       } else {
-        console.error("Dados recebidos da API:", data);
         throw new Error('Não foi possível processar os dados do vídeo. O formato da resposta pode ter mudado.');
       }
 
@@ -293,7 +294,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         <Button variant="ghost" size="icon" onClick={onGoBack} className="rounded-full hover:bg-secondary">
           <ArrowLeft />
         </Button>
-        <div className="flex items-center justify-center flex-1 gap-3">
+        <div className="flex-1 flex justify-center items-center gap-3">
           <span className={`flex items-center justify-center w-8 h-8 rounded-md ${platform.iconColorClass} flex-shrink-0`}>
             <Icon className="w-5 h-5" />
           </span>

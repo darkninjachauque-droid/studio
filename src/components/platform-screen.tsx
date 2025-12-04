@@ -84,46 +84,48 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       const response = await fetch(proxyUrl);
       const data = await response.json();
 
-      if (!response.ok || data.error || (Array.isArray(data) && data.length === 0 && platform.id !== 'youtube') || (platform.id === 'youtube' && !data.url && !(Array.isArray(data) && data.length > 0)) ) {
+      if (!response.ok || data.error || (Array.isArray(data) && data.length === 0) || (typeof data !== 'object')) {
         throw new Error(data.error || data.msg || 'Não foi possível encontrar o vídeo. Verifique a URL e tente novamente.');
       }
       
       let newVideoData: VideoData | null = null;
       const timestamp = Date.now();
 
-      if (platform.id === 'tiktok') {
-        const videoUrl = data.data?.play;
-        const musicUrl = data.data?.music;
-        if (videoUrl) {
-            newVideoData = {
-                previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: "Baixar Vídeo Sem Marca d'Água", filename: `tiktok_video_${timestamp}.mp4`, type: 'video' }]
-            };
-            if(musicUrl){
-                newVideoData.downloads.push({ url: musicUrl, label: "Baixar Som do Vídeo", filename: `tiktok_music_${timestamp}.mp3`, type: 'music' });
-            }
+      if (platform.id === 'tiktok' && data.data?.play) {
+        const videoUrl = data.data.play;
+        const musicUrl = data.data.music;
+        newVideoData = {
+            previewUrl: videoUrl,
+            downloads: [{ url: videoUrl, label: "Baixar Vídeo Sem Marca d'Água", filename: `tiktok_video_${timestamp}.mp4`, type: 'video' }]
+        };
+        if(musicUrl){
+            newVideoData.downloads.push({ url: musicUrl, label: "Baixar Som do Vídeo", filename: `tiktok_music_${timestamp}.mp3`, type: 'music' });
         }
       } else if (platform.id === 'youtube') {
+        // Youtube pode retornar um array de qualidades ou um objeto direto
         let videoUrl = '';
         if (Array.isArray(data) && data.length > 0) {
             const sortedData = data.sort((a,b) => parseInt(b.quality) - parseInt(a.quality));
             videoUrl = sortedData[0]?.url || sortedData[0]?.link;
-        } else if (data.url) {
+        } else if (data.url) { // Fallback para objeto direto
             videoUrl = data.url;
         }
+
         if (videoUrl) {
              newVideoData = {
                 previewUrl: videoUrl,
                 downloads: [{ url: videoUrl, label: "Baixar Vídeo do YouTube", filename: `youtube_video_${timestamp}.mp4`, type: 'video' }]
             };
         }
-      } else { // Instagram & Facebook
+      } else if ((platform.id === 'instagram' || platform.id === 'facebook')) {
+         // Instagram e Facebook geralmente retornam um array
         let videoUrl = '';
-        if (Array.isArray(data) && data.length > 0) {
-            videoUrl = data[0]?.url;
-        } else if (data.data && data.data.url) {
+        if (Array.isArray(data) && data.length > 0 && data[0]?.url) {
+            videoUrl = data[0].url;
+        } else if (data.data?.url) { // Fallback para objeto
             videoUrl = data.data.url;
         }
+        
         if (videoUrl) {
              newVideoData = {
                 previewUrl: videoUrl,
@@ -364,3 +366,5 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     </div>
   );
 }
+
+    

@@ -106,8 +106,8 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
           videoTitle = data.meta.title.replace(/[^a-zA-Z0-9 ]/g, "").replace(/\s+/g, '_');
         }
 
-        if (Array.isArray(data.data) && data.data.length > 0) {
-            const sortedData = data.data.sort((a:any,b:any) => parseInt(b.quality) - parseInt(a.quality));
+        if (Array.isArray(data.url) && data.url.length > 0) {
+            const sortedData = data.url.sort((a:any,b:any) => parseInt(b.quality) - parseInt(a.quality));
             videoUrl = sortedData[0]?.url || sortedData[0]?.link;
         } else if (data.data?.url) {
             videoUrl = data.data.url;
@@ -204,27 +204,29 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         let loaded = 0;
         
         const reader = response.body.getReader();
-        const chunks = [];
+        const chunks: Uint8Array[] = [];
         
+        // eslint-disable-next-line no-constant-condition
         while(true) {
             const { done, value } = await reader.read();
             if (done) {
                 break;
             }
-            if (value) {
-                chunks.push(value);
-                loaded += value.length;
-                if (total > 0) {
-                    const progress = Math.round((loaded / total) * 100);
-                    setDownloadProgress(prev => prev && prev.id === downloadId ? {...prev, progress} : prev);
-                }
+            chunks.push(value);
+            loaded += value.length;
+            if (total > 0) {
+                const progress = Math.round((loaded / total) * 100);
+                 setDownloadProgress(prev => prev && prev.id === downloadId ? {...prev, progress} : prev);
             }
         }
         
+        setDownloadProgress(prev => prev && prev.id === downloadId ? {...prev, progress: 100} : prev);
+
         const blob = new Blob(chunks);
         const blobUrl = window.URL.createObjectURL(blob);
         
         const a = document.createElement('a');
+        a.style.display = 'none';
         a.href = blobUrl;
         a.download = filename;
         document.body.appendChild(a);
@@ -238,7 +240,11 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
         window.URL.revokeObjectURL(blobUrl);
         a.remove();
-        setDownloadProgress(null);
+        
+        // Aguarde um pouco antes de limpar o progresso para o usuário ver o 100%
+        setTimeout(() => {
+          setDownloadProgress(null);
+        }, 1500);
 
     } catch (err: any) {
         setError("Falha no download: " + err.message);

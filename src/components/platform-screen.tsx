@@ -88,8 +88,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       }
       
       let newVideoData: VideoData | null = null;
-      const timestamp = Date.now();
-
+      
       if (platform.id === 'tiktok' && data.data?.play) {
         const videoUrl = data.data.play;
         const musicUrl = data.data.music;
@@ -192,7 +191,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         const response = await fetch(proxyUrl);
 
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({error: `O servidor respondeu com o status ${response.status}`}));
             throw new Error(errorData.error || `O servidor respondeu com o status ${response.status}`);
         }
 
@@ -205,35 +204,24 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         let loaded = 0;
         
         const reader = response.body.getReader();
-        const stream = new ReadableStream({
-            start(controller) {
-                function push() {
-                    reader.read().then(({ done, value }) => {
-                        if (done) {
-                            controller.close();
-                            return;
-                        }
-                        if(value){
-                          loaded += value.length;
-                          if (total > 0) {
-                              const progress = Math.round((loaded / total) * 100);
-                              setDownloadProgress(prev => prev && prev.id === downloadId ? {...prev, progress} : prev);
-                          }
-                          controller.enqueue(value);
-                        }
-                        push();
-                    }).catch(error => {
-                        console.error('Erro no stream de download:', error);
-                        controller.error(error);
-                    })
-                }
-                push();
-            }
-        });
-
-        const newResponse = new Response(stream);
-        const blob = await newResponse.blob();
+        const chunks = [];
         
+        while(true) {
+            const { done, value } = await reader.read();
+            if (done) {
+                break;
+            }
+            if (value) {
+                chunks.push(value);
+                loaded += value.length;
+                if (total > 0) {
+                    const progress = Math.round((loaded / total) * 100);
+                    setDownloadProgress(prev => prev && prev.id === downloadId ? {...prev, progress} : prev);
+                }
+            }
+        }
+        
+        const blob = new Blob(chunks);
         const blobUrl = window.URL.createObjectURL(blob);
         
         const a = document.createElement('a');

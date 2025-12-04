@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Platform } from "./home-screen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,10 +99,10 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         const musicUrl = data.data.music;
         newVideoData = {
             previewUrl: videoUrl,
-            downloads: [{ url: videoUrl, label: "Baixar Vídeo Sem Marca d'Água", filename: `video.mp4`, type: 'video' }]
+            downloads: [{ url: videoUrl, label: "Baixar Vídeo Sem Marca d'Água", filename: `tiktok_video.mp4`, type: 'video' }]
         };
         if(musicUrl){
-            newVideoData.downloads.push({ url: musicUrl, label: "Baixar Som do Vídeo", filename: `audio.mp3`, type: 'music' });
+            newVideoData.downloads.push({ url: musicUrl, label: "Baixar Som do Vídeo", filename: `tiktok_audio.mp3`, type: 'music' });
         }
       } else if (platform.id === 'youtube') {
         let videoUrl = '';
@@ -140,7 +140,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
              newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `video.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `instagram_video.mp4`, type: 'video' }]
             };
         }
       } else if (platform.id === 'facebook') {
@@ -156,7 +156,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
             newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `video.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `facebook_video.mp4`, type: 'video' }]
             };
         }
       }
@@ -178,7 +178,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
   const Icon = platform.icon;
 
-  const handleDownload = async (downloadUrl: string, filename: string) => {
+  const handleDownload = async (downloadUrl: string, originalFilename: string) => {
     if (downloadProgress) {
       toast({
         variant: "destructive",
@@ -188,11 +188,15 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       return;
     }
 
-    const downloadId = filename;
-    setDownloadProgress({ id: downloadId, progress: 0, filename });
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const fileExtension = originalFilename.split('.').pop();
+    const baseFilename = originalFilename.replace(`.${fileExtension}`, '');
+    const finalFilename = `${baseFilename}_${timestamp}.${fileExtension}`;
+
+    setDownloadProgress({ id: finalFilename, progress: 0, filename: finalFilename });
 
     try {
-      const proxyUrl = `/api/proxy?url=${encodeURIComponent(downloadUrl)}&download=true&filename=${encodeURIComponent(filename)}`;
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(downloadUrl)}&download=true&filename=${encodeURIComponent(finalFilename)}`;
       const response = await fetch(proxyUrl);
 
       if (!response.ok) {
@@ -210,29 +214,21 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
       const reader = response.body.getReader();
       const chunks: Uint8Array[] = [];
-
-      const read = async (): Promise<void> => {
-        try {
-          const { done, value } = await reader.read();
-          if (done) {
-            return;
-          }
-          chunks.push(value);
-          loaded += value.length;
-          if (total > 0) {
-            const progress = Math.round((loaded / total) * 100);
-            setDownloadProgress(prev => prev && prev.id === downloadId ? { ...prev, progress } : prev);
-          }
-          await read();
-        } catch(err) {
-            console.error(err);
-            throw new Error("Falha ao ler o stream do arquivo.");
-        }
-      };
       
-      await read();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        chunks.push(value);
+        loaded += value.length;
+        if (total > 0) {
+          const progress = Math.round((loaded / total) * 100);
+          setDownloadProgress(prev => prev && prev.id === finalFilename ? { ...prev, progress } : prev);
+        }
+      }
 
-      setDownloadProgress(prev => prev && prev.id === downloadId ? { ...prev, progress: 100 } : prev);
+      setDownloadProgress(prev => prev && prev.id === finalFilename ? { ...prev, progress: 100 } : prev);
 
       const blob = new Blob(chunks);
       const blobUrl = window.URL.createObjectURL(blob);
@@ -240,13 +236,13 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       const a = document.createElement('a');
       a.style.display = 'none';
       a.href = blobUrl;
-      a.download = filename;
+      a.download = finalFilename;
       document.body.appendChild(a);
       a.click();
 
       toast({
         title: "Download Concluído!",
-        description: `${filename} foi baixado com sucesso.`,
+        description: `${finalFilename} foi baixado com sucesso.`,
         className: "bg-green-500/10 border-green-500 text-white"
       });
 
@@ -341,12 +337,12 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
                 </AlertDescription>
             </Alert>
             
-            <div className="mb-4 rounded-lg bg-black/20 border border-border">
+            <div className="relative mb-4 overflow-hidden rounded-lg bg-black/20 border border-border">
                 <h4 className="flex items-center gap-2 p-3 font-semibold text-primary">
                     <PlayCircle />
                     Preview do Vídeo
                 </h4>
-                <div className="overflow-hidden rounded-b-lg">
+                <div className="overflow-hidden rounded-b-lg aspect-w-16 aspect-h-9">
                     <video
                         key={videoData.previewUrl}
                         className="w-full h-full object-cover bg-black"
@@ -362,7 +358,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
             {downloadProgress && (
               <div className="p-4 my-4 border rounded-lg border-accent/30 bg-accent/10">
                 <div className="flex items-center justify-between mb-2 text-sm">
-                  <span className="font-semibold text-accent-foreground">Baixando: {downloadProgress.filename}</span>
+                  <span className="font-semibold text-accent-foreground truncate pr-2">Baixando: {downloadProgress.filename}</span>
                   <span className="font-mono text-accent">{downloadProgress.progress}%</span>
                 </div>
                 <Progress value={downloadProgress.progress} className="h-2 [&>div]:bg-accent" />

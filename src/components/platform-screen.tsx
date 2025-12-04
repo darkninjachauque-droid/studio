@@ -45,25 +45,25 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       "Abra o TikTok e encontre o vídeo desejado",
       "Clique em 'Compartilhar' e copie o link",
       "Cole o link abaixo e clique em 'Buscar'",
-      "Aguarde o download e o vídeo será salvo",
+      "Assista o preview e baixe o vídeo",
     ],
     instagram: [
       "Abra o Instagram e encontre o vídeo ou Reels",
       "Clique nos três pontos e copie o link",
       "Cole o link abaixo e clique em 'Buscar'",
-      "Aguarde o download e o vídeo será salvo",
+      "Assista o preview e baixe o vídeo",
     ],
     facebook: [
       "Abra o Facebook e encontre o vídeo",
       "Clique nos três pontos e copie o link",
       "Cole o link abaixo e clique em 'Buscar'",
-      "Aguarde o download e o vídeo será salvo",
+      "Assista o preview e baixe o vídeo",
     ],
     youtube: [
       "Abra o YouTube e encontre o vídeo",
       "Copie o link da barra de endereços",
       "Cole o link abaixo e clique em 'Buscar'",
-      "Aguarde o download e o vídeo será salvo",
+      "Assista o preview e baixe o vídeo",
     ]
   };
 
@@ -101,8 +101,8 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
       const data = await response.json();
 
-      if (data.error || (data.status && data.status !== 'success' && data.status !== 200 && !data.data && !data.url)) {
-        throw new Error(data.error || data.msg || 'A API retornou um erro. Verifique a URL e tente novamente.');
+      if (!data || Object.keys(data).length === 0 || data.error || (data.status && data.status !== 'success' && data.status !== 200 && !data.data && !data.url)) {
+        throw new Error(data.error || data.msg || 'A API retornou um erro ou uma resposta vazia. Verifique a URL e tente novamente.');
       }
       
       let newVideoData: VideoData | null = null;
@@ -117,15 +117,17 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if(musicUrl){
             newVideoData.downloads.push({ url: musicUrl, label: "Baixar Som do Vídeo", filename: `tiktok_audio.mp3`, type: 'music' });
         }
-      } else if (platform.id === 'youtube' && data.url) {
+      } else if (platform.id === 'youtube') {
         let videoUrl = '';
         let videoTitle = "video";
         if (data.meta?.title) {
           videoTitle = data.meta.title.replace(/[^a-zA-Z0-9 ]/g, "").replace(/\s+/g, '_');
         }
 
-        if (Array.isArray(data.url) && data.url.length > 0) {
-            const sortedVideos = data.url
+        if (data.url) { // Estrutura antiga/simples
+             videoUrl = data.url;
+        } else if (Array.isArray(data.data?.url) && data.data.url.length > 0) { // Estrutura nova
+            const sortedVideos = data.data.url
                 .filter((v: any) => v.quality && !v.noAudio)
                 .sort((a: any, b: any) => parseInt(b.quality) - parseInt(a.quality));
             
@@ -137,20 +139,34 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
              newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: "Baixar Vídeo", filename: `${videoTitle}.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `${videoTitle}.mp4`, type: 'video' }]
             };
         }
-      } else if (platform.id === 'instagram' && data.data && data.data.length > 0) {
-        newVideoData = {
-            previewUrl: data.data[0].url,
-            downloads: [{ url: data.data[0].url, label: "Baixar Vídeo", filename: `instagram_video.mp4`, type: 'video' }]
-        };
-      } else if (platform.id === 'facebook' && data.data.links) {
-        const videoUrl = data.data.links['HD video'] || data.data.links['Normal video'];
+      } else if (platform.id === 'instagram') {
+        let videoUrl = '';
+        if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+            videoUrl = data.data[0].url;
+        } else if (data.url) {
+            videoUrl = data.url;
+        }
         if (videoUrl) {
             newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: "Baixar Vídeo", filename: `facebook_video.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `instagram_video.mp4`, type: 'video' }]
+            };
+        }
+      } else if (platform.id === 'facebook') {
+        let videoUrl = '';
+        if (data.data?.links) {
+            videoUrl = data.data.links['HD video'] || data.data.links['Normal video'];
+        } else if (data.links) {
+            videoUrl = data.links['HD'] || data.links['SD'];
+        }
+
+        if (videoUrl) {
+            newVideoData = {
+                previewUrl: videoUrl,
+                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `facebook_video.mp4`, type: 'video' }]
             };
         }
       }
@@ -244,7 +260,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
       toast({
         title: "Download Concluído!",
-        description: ``,
+        description: `Seu vídeo foi salvo com sucesso.`,
         className: "bg-green-500/10 border-green-500 text-white"
       });
 
@@ -268,11 +284,11 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
   return (
     <div className="p-6 animate-in fade-in duration-500">
-      <header className="relative flex items-center w-full pb-4 mb-6 border-b border-border">
+      <header className="relative flex items-center justify-center w-full pb-4 mb-6 border-b border-border">
         <Button variant="ghost" size="icon" onClick={onGoBack} className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full hover:bg-secondary">
           <ArrowLeft />
         </Button>
-        <div className="flex-1 flex justify-center items-center gap-3">
+        <div className="flex items-center gap-3">
           <span className={`flex items-center justify-center w-8 h-8 rounded-md ${platform.iconColorClass} flex-shrink-0`}>
             <Icon className="w-5 h-5" />
           </span>
@@ -288,7 +304,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
             Como Baixar
           </h3>
           <ol className="text-sm list-decimal list-inside space-y-2 text-muted-foreground">
-            {platformInstructions[platform.id].map((step, index) => (
+            {platformInstructions[platform.id as keyof typeof platformInstructions].map((step, index) => (
               <li key={index}>{step}</li>
             ))}
           </ol>
@@ -399,3 +415,5 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     </div>
   );
 }
+
+    

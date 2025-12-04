@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -287,19 +288,18 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
   return (
     <div className="p-6 animate-in fade-in duration-500">
-      <header className="relative flex items-center justify-between pb-4 mb-6 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={onGoBack} className="rounded-full hover:bg-secondary">
+      <header className="relative flex items-center justify-center pb-4 mb-6 border-b border-border">
+        <Button variant="ghost" size="icon" onClick={onGoBack} className="absolute left-0 rounded-full hover:bg-secondary">
           <ArrowLeft />
         </Button>
         <div className="flex items-center gap-3">
           <span className={`flex items-center justify-center w-8 h-8 rounded-md ${platform.iconColorClass} flex-shrink-0`}>
             <Icon className="w-5 h-5" />
           </span>
-          <h2 className="text-2xl font-bold">
-            <span>Download {platform.name}</span>
+          <h2 className="text-2xl font-bold whitespace-nowrap">
+            Download {platform.name}
           </h2>
         </div>
-        <div className="w-10"></div>
       </header>
 
       <div className="p-5 mb-6 rounded-lg bg-secondary border-l-4 border-primary">
@@ -393,7 +393,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
               {videoData.downloads.map((download, index) => (
                 <Button 
                     key={index}
-                    onClick={() => handleDownload(download.url, download.filename)}
+                    onClick={() => handleDownload(download.url, download.label === "Baixar Vídeo" ? `video.mp4` : `${platform.id}_${download.type}.mp4`)}
                     disabled={!!downloadProgress}
                     className={`w-full h-12 text-base font-bold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed
                       ${download.type === 'video' ? 'bg-gradient-to-r from-accent to-blue-400 hover:shadow-accent/40' : 'bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:shadow-purple-500/40'}`
@@ -419,3 +419,5 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     </div>
   );
 }
+
+    

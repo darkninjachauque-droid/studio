@@ -56,22 +56,21 @@ export default function HomeScreen({ onPlatformSelect }: HomeScreenProps) {
         Escolha a Plataforma
         <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-primary to-accent rounded-full" />
       </h2>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3">
         {platformsData.map((platform) => {
           const Icon = platform.icon;
           return (
             <Card
               key={platform.id}
               onClick={() => onPlatformSelect(platform)}
-              className="p-3 transition-all duration-300 border-l-4 cursor-pointer border-transparent hover:border-l-accent hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20 hover:bg-secondary"
+              className="p-3 transition-all duration-300 border-l-4 cursor-pointer flex items-center gap-4 border-transparent hover:border-l-accent hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20 hover:bg-secondary"
             >
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${platform.iconColorClass}`}>
-                  <Icon className="w-6 h-6" />
-                </div>
-                <div className="flex-1">
-                  <CardTitle className="text-lg">{platform.name}</CardTitle>
-                </div>
+              <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${platform.iconColorClass}`}>
+                <Icon className="w-6 h-6" />
+              </div>
+              <div className="flex-1 text-left">
+                <CardTitle className="text-lg">{platform.name}</CardTitle>
+                <CardDescription className="text-xs">{platform.description}</CardDescription>
               </div>
             </Card>
           );

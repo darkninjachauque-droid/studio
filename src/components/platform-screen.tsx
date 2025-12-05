@@ -121,7 +121,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
             newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: `Baixar Vídeo`, filename: `instagram_video.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: "Baixar Vídeo", filename: `instagram_video.mp4`, type: 'video' }]
             };
         }
       } else if (platform.id === 'youtube') {
@@ -142,7 +142,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
              newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: `Baixar Vídeo`, filename: `${videoTitle}.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: "Baixar Vídeo", filename: `${videoTitle}.mp4`, type: 'video' }]
             };
         }
       } else if (platform.id === 'facebook') {
@@ -159,7 +159,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
             newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: `Baixar Vídeo`, filename: `facebook_video.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: "Baixar Vídeo", filename: `facebook_video.mp4`, type: 'video' }]
             };
         }
       } else if (platform.id === 'tiktok' && data.data?.play) {
@@ -259,7 +259,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       a.href = blobUrl;
       a.download = finalFilename;
       document.body.appendChild(a);
-      a.click();
+a.click();
 
       toast({
         title: "Download Concluído!",
@@ -287,20 +287,19 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
   return (
     <div className="p-6 animate-in fade-in duration-500">
-      <header className="relative flex items-center justify-between w-full pb-4 mb-6 border-b border-border">
-        <Button variant="ghost" size="icon" onClick={onGoBack} className="rounded-full hover:bg-secondary">
+      <header className="relative w-full pb-4 mb-6 border-b border-border">
+        <Button variant="ghost" onClick={onGoBack} className="absolute top-0 left-0 px-2 hover:bg-secondary">
           <ArrowLeft />
+          <span className="ml-2">Voltar</span>
         </Button>
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-3">
-          <span className={`flex items-center justify-center w-8 h-8 rounded-md ${platform.iconColorClass} flex-shrink-0`}>
-            <Icon className="w-5 h-5" />
+        <div className="flex flex-col items-center justify-center w-full gap-2 pt-12 text-center">
+          <span className={`flex items-center justify-center w-10 h-10 rounded-lg ${platform.iconColorClass} flex-shrink-0`}>
+            <Icon className="w-6 h-6" />
           </span>
           <h2 className="text-xl font-bold whitespace-nowrap">
             Download {platform.name}
           </h2>
         </div>
-        {/* Placeholder to balance the back button */}
-        <div className="w-10 h-10" />
       </header>
 
       <div className="p-5 mb-6 rounded-lg bg-secondary border-l-4 border-primary">

@@ -121,7 +121,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
             newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `instagram_video.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: `Baixar Vídeo`, filename: `instagram_video.mp4`, type: 'video' }]
             };
         }
       } else if (platform.id === 'youtube') {
@@ -142,7 +142,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
              newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `${videoTitle}.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: `Baixar Vídeo`, filename: `${videoTitle}.mp4`, type: 'video' }]
             };
         }
       } else if (platform.id === 'facebook') {
@@ -159,7 +159,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
         if (videoUrl) {
             newVideoData = {
                 previewUrl: videoUrl,
-                downloads: [{ url: videoUrl, label: `Baixar Vídeo do ${platform.name}`, filename: `facebook_video.mp4`, type: 'video' }]
+                downloads: [{ url: videoUrl, label: `Baixar Vídeo`, filename: `facebook_video.mp4`, type: 'video' }]
             };
         }
       } else if (platform.id === 'tiktok' && data.data?.play) {
@@ -170,7 +170,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
             downloads: [{ url: videoUrl, label: "Baixar Vídeo", filename: `tiktok_video.mp4`, type: 'video' }]
         };
         if(musicUrl){
-            newVideoData.downloads.push({ url: musicUrl, label: "Baixar Som do Vídeo", filename: `tiktok_audio.mp3`, type: 'music' });
+            newVideoData.downloads.push({ url: musicUrl, label: "Baixar Áudio", filename: `tiktok_audio.mp3`, type: 'music' });
         }
       }
 
@@ -396,9 +396,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
                     key={index}
                     onClick={() => handleDownload(download.url, download.filename)}
                     disabled={!!downloadProgress}
-                    className={`w-full h-12 text-base font-bold transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed
-                      ${download.type === 'video' ? 'bg-gradient-to-r from-accent to-blue-400 hover:shadow-accent/40' : 'bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:shadow-purple-500/40'}`
-                    }
+                    className="w-full h-12 text-base font-bold text-white bg-black transition-all duration-300 hover:bg-gray-800 hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {download.type === 'video' ? <Download className="mr-2" /> : <Music className="mr-2" />}
                     {download.label}

@@ -7,7 +7,7 @@ import type { Platform } from "./home-screen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowLeft, School, Link as LinkIcon, Search, Loader2, PlayCircle, Download, Music, AlertTriangle, CheckCircle2, Lightbulb } from "lucide-react";
+import { ArrowLeft, Link as LinkIcon, Search, Loader2, PlayCircle, Download, Music, AlertTriangle, CheckCircle2, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { SubscriptionContext } from "@/context/SubscriptionContext";
@@ -48,13 +48,13 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     throw new Error("SubscriptionContext must be used within a SubscriptionProvider");
   }
 
-  const { isSubscribed } = subscriptionContext;
+  const { isSubscribed, isLoading } = subscriptionContext;
 
   useEffect(() => {
-    if (!isSubscribed) {
+    if (!isLoading && !isSubscribed) {
       router.push('/pricing');
     }
-  }, [isSubscribed, router]);
+  }, [isSubscribed, isLoading, router]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -284,6 +284,15 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     }
   };
 
+  if (isLoading) {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-4">
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Verificando sua assinatura...</p>
+        </div>
+    );
+  }
+
   if (!isSubscribed) {
     return (
         <div className="p-6 animate-in fade-in duration-500">
@@ -307,38 +316,36 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
   return (
     <div className="p-6 animate-in fade-in duration-500">
-      <header className="flex w-full mb-6 items-center">
+      <header>
         <Button variant="ghost" onClick={onGoBack} className="px-2 hover:bg-secondary -ml-2">
           <ArrowLeft />
           <span className="ml-2">Voltar</span>
         </Button>
       </header>
       
-      <div className="mb-6 text-center">
-        <div className="flex items-center justify-center gap-3 mb-4">
-            <span className={`flex items-center justify-center w-10 h-10 rounded-lg ${platform.iconColorClass} flex-shrink-0`}>
-                <Icon className="w-6 h-6" />
-            </span>
-            <h2 className="text-xl font-bold">Download {platform.name}</h2>
-        </div>
+      <div className="flex items-center justify-center gap-3 my-4">
+        <span className={`flex items-center justify-center w-8 h-8 rounded-lg ${platform.iconColorClass} flex-shrink-0`}>
+          <Icon className="w-5 h-5" />
+        </span>
+        <h2 className="text-xl font-bold">Download {platform.name}</h2>
       </div>
 
-        <form onSubmit={handleSearch}>
-            <div className="flex items-center gap-4 mb-4">
-              <Input 
-                  type="text"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder={`Cole o link do vídeo do ${platform.name}`}
-                  className="h-12 text-base focus-visible:ring-primary"
-                  disabled={loading || !!downloadProgress}
-              />
-            </div>
-            <Button type="submit" className="w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-pink-500 hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300" disabled={loading || !!downloadProgress}>
-                {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Search className="mr-2 h-5 w-5" />}
-                Buscar Vídeo
-            </Button>
-        </form>
+      <form onSubmit={handleSearch}>
+          <div className="flex items-center gap-4 mb-4">
+            <Input 
+                type="text"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder={`Cole o link do vídeo do ${platform.name}`}
+                className="h-12 text-base focus-visible:ring-primary"
+                disabled={loading || !!downloadProgress}
+            />
+          </div>
+          <Button type="submit" className="w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-pink-500 hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300" disabled={loading || !!downloadProgress}>
+              {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Search className="mr-2 h-5 w-5" />}
+              Buscar Vídeo
+          </Button>
+      </form>
       
 
       {loading && (

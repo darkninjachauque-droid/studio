@@ -4,6 +4,7 @@ import React, { createContext, useState, useEffect, ReactNode } from 'react';
 
 interface SubscriptionContextType {
   isSubscribed: boolean;
+  isLoading: boolean;
   subscribe: () => void;
   unsubscribe: () => void;
 }
@@ -50,13 +51,8 @@ export const SubscriptionProvider = ({ children }: SubscriptionProviderProps) =>
     }
   };
   
-  // Don't render children until subscription status is loaded from localStorage
-  if (isLoading) {
-    return null; 
-  }
-
   return (
-    <SubscriptionContext.Provider value={{ isSubscribed, subscribe, unsubscribe }}>
+    <SubscriptionContext.Provider value={{ isSubscribed, isLoading, subscribe, unsubscribe }}>
       {children}
     </SubscriptionContext.Provider>
   );

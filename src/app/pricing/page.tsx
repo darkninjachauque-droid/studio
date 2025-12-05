@@ -1,13 +1,12 @@
 "use client";
 
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, Star, Zap } from "lucide-react";
-import { SubscriptionContext } from "@/context/SubscriptionContext";
 import { useToast } from "@/hooks/use-toast";
 
 interface Plan {
@@ -19,17 +18,10 @@ interface Plan {
 export default function PricingPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const subscriptionContext = useContext(SubscriptionContext);
     const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [confirmationMessage, setConfirmationMessage] = useState("");
 
-
-    if (!subscriptionContext) {
-        throw new Error("SubscriptionContext must be used within a SubscriptionProvider");
-    }
-
-    const { subscribe } = subscriptionContext;
 
     const handleSelectPlan = (plan: Plan) => {
         setSelectedPlan(plan);
@@ -39,11 +31,11 @@ export default function PricingPage() {
 
     const handleConfirmPayment = () => {
         if (!selectedPlan || !confirmationMessage.trim()) return;
-        subscribe();
+        
         toast({
-            title: "Inscrição Ativada!",
-            description: `Você agora está no plano ${selectedPlan.name}. Aproveite!`,
-            className: "bg-green-500/10 border-green-500 text-white"
+            title: "Solicitação Recebida!",
+            description: `Sua confirmação para o plano ${selectedPlan.name} foi recebida. A ativação pode levar alguns minutos.`,
+            className: "bg-blue-500/10 border-blue-500 text-white"
         });
         setIsDialogOpen(false);
         router.push("/");
@@ -63,7 +55,7 @@ export default function PricingPage() {
                         Nossos Planos
                     </h1>
                     <p className="max-w-2xl mx-auto mb-12 text-lg text-muted-foreground">
-                        Escolha o plano perfeito para você e comece a baixar vídeos ilimitados hoje mesmo. Sem complicações.
+                        Escolha o plano perfeito para você e comece a baixar vídeos ilimitados hoje mesmo.
                     </p>
 
                     <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
@@ -192,12 +184,12 @@ export default function PricingPage() {
                         />
                     </div>
                      <p className="text-xs text-center text-muted-foreground">
-                        Após colar a mensagem de confirmação, clique no botão abaixo para ativar.
+                        Após colar a mensagem de confirmação, clique no botão abaixo para solicitar a ativação.
                     </p>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={handleConfirmPayment} disabled={!confirmationMessage.trim()}>
-                            Já Paguei, Ativar Plano
+                            Confirmar Pagamento
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -1,7 +1,6 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { SubscriptionProvider } from '@/context/SubscriptionContext';
 
 export const metadata: Metadata = {
   title: 'BAIXA VÍDEOS',
@@ -23,9 +22,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <SubscriptionProvider>
-          {children}
-        </SubscriptionProvider>
+        {children}
         <Toaster />
         <script
           dangerouslySetInnerHTML={{

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useContext, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Platform } from "./home-screen";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ArrowLeft, Link as LinkIcon, Search, Loader2, PlayCircle, Download, Music, AlertTriangle, CheckCircle2, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
-import { SubscriptionContext } from "@/context/SubscriptionContext";
 
 interface PlatformScreenProps {
   platform: Platform;
@@ -42,32 +41,10 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
   const [downloadProgress, setDownloadProgress] = useState<DownloadProgress>(null);
   const { toast } = useToast();
   const router = useRouter();
-  const subscriptionContext = useContext(SubscriptionContext);
 
-  if (!subscriptionContext) {
-    throw new Error("SubscriptionContext must be used within a SubscriptionProvider");
-  }
-
-  const { isSubscribed, isLoading } = subscriptionContext;
-
-  useEffect(() => {
-    if (!isLoading && !isSubscribed) {
-      router.push('/pricing');
-    }
-  }, [isSubscribed, isLoading, router]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!isSubscribed) {
-      toast({
-        variant: "destructive",
-        title: "Acesso Negado",
-        description: "Você precisa de um plano para baixar vídeos.",
-      });
-      router.push('/pricing');
-      return;
-    }
 
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const extractedUrls = url.match(urlRegex);
@@ -284,45 +261,15 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     }
   };
 
-  if (isLoading) {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <Loader2 className="w-10 h-10 animate-spin text-primary" />
-            <p className="mt-4 text-muted-foreground">Verificando sua assinatura...</p>
-        </div>
-    );
-  }
-
-  if (!isSubscribed) {
-    return (
-        <div className="p-6 animate-in fade-in duration-500">
-            <header className="flex w-full mb-6 items-center">
-                <Button variant="ghost" onClick={onGoBack} className="px-2 hover:bg-secondary -ml-2">
-                    <ArrowLeft />
-                    <span className="ml-2">Voltar</span>
-                </Button>
-            </header>
-            <div className="flex flex-col items-center justify-center p-6 text-center rounded-lg bg-secondary">
-                <AlertTriangle className="w-10 h-10 mb-4 text-destructive" />
-                <h2 className="font-semibold text-lg mb-2">Acesso Restrito</h2>
-                <p className="text-sm text-muted-foreground mb-4">Você precisa de um plano de assinatura para baixar vídeos.</p>
-                <Button onClick={() => router.push('/pricing')} className="w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-pink-500 hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300">
-                    Ver Planos
-                </Button>
-            </div>
-        </div>
-    );
-  }
-
   return (
     <div className="p-6 animate-in fade-in duration-500">
-      <header>
-        <Button variant="ghost" onClick={onGoBack} className="px-2 hover:bg-secondary -ml-2">
+      <div className="flex justify-between items-center mb-4">
+        <Button variant="ghost" onClick={onGoBack} className="px-2 hover:bg-secondary">
           <ArrowLeft />
           <span className="ml-2">Voltar</span>
         </Button>
-      </header>
-      
+      </div>
+
       <div className="flex items-center justify-center gap-3 my-4">
         <span className={`flex items-center justify-center w-8 h-8 rounded-lg ${platform.iconColorClass} flex-shrink-0`}>
           <Icon className="w-5 h-5" />
@@ -331,20 +278,23 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       </div>
 
       <form onSubmit={handleSearch}>
-          <div className="flex items-center gap-4 mb-4">
-            <Input 
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder={`Cole o link do vídeo do ${platform.name}`}
-                className="h-12 text-base focus-visible:ring-primary"
-                disabled={loading || !!downloadProgress}
-            />
+        <div className="flex items-center gap-2 mb-4">
+          <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${platform.iconColorClass} flex-shrink-0`}>
+            <LinkIcon className="w-6 h-6 text-white" />
           </div>
-          <Button type="submit" className="w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-pink-500 hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300" disabled={loading || !!downloadProgress}>
-              {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Search className="mr-2 h-5 w-5" />}
-              Buscar Vídeo
-          </Button>
+          <Input 
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder={`Cole o link do vídeo do ${platform.name}`}
+              className="h-12 text-base flex-1 focus-visible:ring-primary"
+              disabled={loading || !!downloadProgress}
+          />
+        </div>
+        <Button type="submit" className="w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-pink-500 hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300" disabled={loading || !!downloadProgress}>
+            {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Search className="mr-2 h-5 w-5" />}
+            Buscar Vídeo
+        </Button>
       </form>
       
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { Download, Smartphone } from "lucide-react";
 
 export default function InstallPwaButton() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -50,20 +50,26 @@ export default function InstallPwaButton() {
 
   if (isAppInstalled) {
     return (
-        <div className="text-center p-3 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20">
-            <p>O aplicativo já está instalado!</p>
+        <div className="text-center p-3 mt-6 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20">
+            <p className="text-sm">O aplicativo já está instalado no seu dispositivo!</p>
         </div>
     );
   }
+  
+  if (!deferredPrompt) {
+    return null; // Don't show anything if PWA is not installable
+  }
 
   return (
-    <Button 
+    <div 
       onClick={handleInstallClick}
-      disabled={!deferredPrompt}
-      className="w-full h-12 text-base font-bold bg-gradient-to-r from-green-500 to-emerald-500 hover:shadow-lg hover:shadow-green-500/40 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:-translate-y-0"
+      className="mt-6 p-4 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center gap-3 cursor-pointer hover:bg-primary/20 transition-all"
     >
-      <Download className="mr-2" />
-      Baixar Nosso Aplicativo
-    </Button>
+      <Smartphone className="w-5 h-5" />
+      <div>
+        <h4 className="font-bold">Baixe Nosso Aplicativo</h4>
+        <p className="text-xs text-primary/80">Tenha acesso rápido diretamente da sua tela inicial.</p>
+      </div>
+    </div>
   );
 }

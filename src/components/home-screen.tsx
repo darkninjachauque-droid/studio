@@ -72,7 +72,7 @@ export default function HomeScreen({ onPlatformSelect }: HomeScreenProps) {
               onClick={() => onPlatformSelect(platform)}
               className="p-3 transition-all duration-300 border-l-4 cursor-pointer flex items-center gap-4 border-transparent hover:border-l-accent hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20 hover:bg-secondary"
             >
-              <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${platform.iconColorClass}`}>
+              <div className={`flex items-center justify-center w-12 h-12 rounded-lg ${platform.iconColorClass} flex-shrink-0`}>
                 <Icon className="w-6 h-6" />
               </div>
               <div className="flex-1 text-left">

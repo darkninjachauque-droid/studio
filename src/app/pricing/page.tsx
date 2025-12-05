@@ -1,0 +1,136 @@
+"use client";
+
+import { useContext } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Check, Star, Zap } from "lucide-react";
+import { SubscriptionContext } from "@/context/SubscriptionContext";
+import { useToast } from "@/hooks/use-toast";
+
+export default function PricingPage() {
+    const router = useRouter();
+    const { toast } = useToast();
+    const subscriptionContext = useContext(SubscriptionContext);
+
+    if (!subscriptionContext) {
+        throw new Error("SubscriptionContext must be used within a SubscriptionProvider");
+    }
+
+    const { subscribe } = subscriptionContext;
+
+    const handleSubscribe = (planName: string) => {
+        subscribe();
+        toast({
+            title: "Inscrição Ativada!",
+            description: `Você agora está no plano ${planName}. Aproveite!`,
+            className: "bg-green-500/10 border-green-500 text-white"
+        });
+        router.push("/");
+    };
+
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background text-foreground">
+            <div className="w-full max-w-4xl text-center">
+                <h1 className="flex items-center justify-center gap-3 text-5xl font-extrabold animate-blink-colors mb-4">
+                    <Zap className="text-primary" size={48} />
+                    Nossos Planos
+                </h1>
+                <p className="max-w-2xl mx-auto mb-12 text-lg text-muted-foreground">
+                    Escolha o plano perfeito para você e comece a baixar vídeos ilimitados hoje mesmo. Sem complicações.
+                </p>
+
+                <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                    {/* Plano Mensal */}
+                    <Card className="relative flex flex-col justify-between overflow-hidden border-2 bg-card/80 backdrop-blur-sm shadow-xl border-border hover:border-primary/50 transition-all duration-300">
+                        <CardHeader className="text-left">
+                            <CardTitle className="flex items-center gap-2 text-2xl font-bold">
+                                <Star /> Plano Mensal
+                            </CardTitle>
+                            <CardDescription>
+                                Acesso completo por um mês.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-grow text-left">
+                            <div className="mb-6">
+                                <span className="text-5xl font-bold">150</span>
+                                <span className="ml-2 text-xl text-muted-foreground">MT /mês</span>
+                            </div>
+                            <ul className="space-y-3">
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-green-400" />
+                                    <span>Downloads ilimitados</span>
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-green-400" />
+                                    <span>Todas as plataformas</span>
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-green-400" />
+                                    <span>Downloads em alta qualidade</span>
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-green-400" />
+                                    <span>Suporte prioritário</span>
+                                </li>
+                            </ul>
+                        </CardContent>
+                        <CardFooter>
+                            <Button onClick={() => handleSubscribe("Mensal")} className="w-full h-12 text-lg font-bold">
+                                Assinar Agora
+                            </Button>
+                        </CardFooter>
+                    </Card>
+
+                    {/* Plano Anual */}
+                    <Card className="relative flex flex-col justify-between overflow-hidden border-2 bg-card/80 backdrop-blur-sm shadow-2xl shadow-primary/20 border-primary">
+                         <div className="absolute top-0 right-0 px-4 py-1 text-sm font-bold text-white rounded-bl-lg bg-primary">
+                            MAIS POPULAR
+                        </div>
+                        <CardHeader className="text-left">
+                            <CardTitle className="flex items-center gap-2 text-2xl font-bold text-primary">
+                                <Zap /> Plano Anual
+                            </CardTitle>
+                            <CardDescription>
+                                Economize com o nosso melhor plano!
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="flex-grow text-left">
+                            <div className="mb-6">
+                                <span className="text-5xl font-bold">1500</span>
+                                <span className="ml-2 text-xl text-muted-foreground">MT /ano</span>
+                            </div>
+                            <ul className="space-y-3">
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-green-400" />
+                                    <span>Downloads ilimitados</span>
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-green-400" />
+                                    <span>Todas as plataformas</span>
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-green-400" />
+                                    <span>Downloads em alta qualidade</span>
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <Check className="w-5 h-5 text-green-400" />
+                                    <span>Suporte prioritário</span>
+                                </li>
+                            </ul>
+                        </CardContent>
+                        <CardFooter>
+                            <Button onClick={() => handleSubscribe("Anual")} className="w-full h-12 text-lg font-bold bg-gradient-to-r from-primary to-pink-500 hover:shadow-lg hover:shadow-primary/40">
+                                Assinar Agora
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </div>
+
+                 <Button variant="link" onClick={() => router.push('/')} className="mt-12 text-muted-foreground">
+                    Voltar para o início
+                </Button>
+            </div>
+        </div>
+    );
+}

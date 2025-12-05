@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import type { Platform } from "./home-screen";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ArrowLeft, School, Link as LinkIcon, Search, Loader2, PlayCircle, Download, Music, AlertTriangle, CheckCircle2, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { SubscriptionContext } from "@/context/SubscriptionContext";
 
 interface PlatformScreenProps {
   platform: Platform;
@@ -39,9 +41,33 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
   const [videoData, setVideoData] = useState<VideoData | null>(null);
   const [downloadProgress, setDownloadProgress] = useState<DownloadProgress>(null);
   const { toast } = useToast();
+  const router = useRouter();
+  const subscriptionContext = useContext(SubscriptionContext);
+
+  if (!subscriptionContext) {
+    throw new Error("SubscriptionContext must be used within a SubscriptionProvider");
+  }
+
+  const { isSubscribed } = subscriptionContext;
+
+  useEffect(() => {
+    if (!isSubscribed) {
+      router.push('/pricing');
+    }
+  }, [isSubscribed, router]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isSubscribed) {
+      toast({
+        variant: "destructive",
+        title: "Acesso Negado",
+        description: "Você precisa de um plano para baixar vídeos.",
+      });
+      router.push('/pricing');
+      return;
+    }
 
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const extractedUrls = url.match(urlRegex);
@@ -258,6 +284,27 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     }
   };
 
+  if (!isSubscribed) {
+    return (
+        <div className="p-6 animate-in fade-in duration-500">
+            <header className="flex w-full mb-6 items-center">
+                <Button variant="ghost" onClick={onGoBack} className="px-2 hover:bg-secondary -ml-2">
+                    <ArrowLeft />
+                    <span className="ml-2">Voltar</span>
+                </Button>
+            </header>
+            <div className="flex flex-col items-center justify-center p-6 text-center rounded-lg bg-secondary">
+                <AlertTriangle className="w-10 h-10 mb-4 text-destructive" />
+                <h2 className="font-semibold text-lg mb-2">Acesso Restrito</h2>
+                <p className="text-sm text-muted-foreground mb-4">Você precisa de um plano de assinatura para baixar vídeos.</p>
+                <Button onClick={() => router.push('/pricing')} className="w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-pink-500 hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+                    Ver Planos
+                </Button>
+            </div>
+        </div>
+    );
+  }
+
   return (
     <div className="p-6 animate-in fade-in duration-500">
       <header className="flex w-full mb-6 items-center">
@@ -266,14 +313,15 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
           <span className="ml-2">Voltar</span>
         </Button>
       </header>
-
-      <div className="mb-6">
+      
+      <div className="mb-6 text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
             <span className={`flex items-center justify-center w-10 h-10 rounded-lg ${platform.iconColorClass} flex-shrink-0`}>
                 <Icon className="w-6 h-6" />
             </span>
-            <h2 className="text-2xl font-bold">Download {platform.name}</h2>
+            <h2 className="text-xl font-bold">Download {platform.name}</h2>
         </div>
+      </div>
 
         <form onSubmit={handleSearch}>
             <div className="flex items-center gap-4 mb-4">
@@ -291,10 +339,10 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
                 Buscar Vídeo
             </Button>
         </form>
-      </div>
+      
 
       {loading && (
-        <div className="flex flex-col items-center justify-center p-6 text-center rounded-lg bg-secondary">
+        <div className="flex flex-col items-center justify-center p-6 text-center rounded-lg bg-secondary mt-6">
           <Loader2 className="w-10 h-10 mb-4 animate-spin text-accent" />
           <p className="font-semibold text-lg">Processando vídeo...</p>
           <p className="text-sm text-muted-foreground">Aguarde enquanto preparamos seu download.</p>
@@ -302,7 +350,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       )}
 
       {error && (
-        <Alert variant="destructive" className="animate-in fade-in duration-300">
+        <Alert variant="destructive" className="animate-in fade-in duration-300 mt-6">
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Erro!</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
@@ -310,7 +358,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       )}
 
       {videoData && !loading && (
-        <div className="p-4 rounded-lg bg-secondary animate-in slide-in-from-bottom-5 duration-500">
+        <div className="p-4 rounded-lg bg-secondary animate-in slide-in-from-bottom-5 duration-500 mt-6">
             <Alert className="mb-4 border-green-500 bg-green-500/10 text-green-300">
                 <CheckCircle2 className="h-4 w-4 !text-green-400" />
                 <AlertTitle className="!text-green-400 font-bold">Vídeo encontrado!</AlertTitle>
@@ -364,7 +412,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       )}
 
       {!videoData && !loading && !error && (
-        <Alert className="border-accent/50 bg-accent/10 text-accent/90">
+        <Alert className="border-accent/50 bg-accent/10 text-accent/90 mt-6">
           <Lightbulb className="h-4 w-4" />
           <AlertTitle>Pronto para começar!</AlertTitle>
           <AlertDescription>
@@ -375,5 +423,3 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     </div>
   );
 }
-
-    

@@ -38,7 +38,7 @@ export default function PricingPage() {
     };
 
     const handleConfirmPayment = () => {
-        if (!selectedPlan) return;
+        if (!selectedPlan || !confirmationMessage.trim()) return;
         subscribe();
         toast({
             title: "Inscrição Ativada!",

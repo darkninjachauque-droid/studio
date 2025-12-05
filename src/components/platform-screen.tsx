@@ -201,7 +201,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const fileExtension = originalFilename.split('.').pop() || 'mp4';
-    const baseFilename = originalFilename.replace(/\.[^/.]+$/, "") || platform.id;
+    const baseFilename = "video_baixado";
     const finalFilename = `${baseFilename}_${timestamp}.${fileExtension}`;
 
     setDownloadProgress({ id: finalFilename, progress: 0, filename: finalFilename });

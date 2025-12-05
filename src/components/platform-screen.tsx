@@ -40,33 +40,6 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
   const [downloadProgress, setDownloadProgress] = useState<DownloadProgress>(null);
   const { toast } = useToast();
 
-  const platformInstructions = {
-    tiktok: [
-      "Abra o TikTok e encontre o vídeo desejado",
-      "Clique em 'Compartilhar' e copie o link",
-      "Cole o link abaixo e clique em 'Buscar'",
-      "Assista o preview e baixe o vídeo",
-    ],
-    instagram: [
-      "Abra o Instagram e encontre o vídeo ou Reels",
-      "Clique nos três pontos e copie o link",
-      "Cole o link abaixo e clique em 'Buscar'",
-      "Assista o preview e baixe o vídeo",
-    ],
-    facebook: [
-      "Abra o Facebook e encontre o vídeo",
-      "Clique nos três pontos e copie o link",
-      "Cole o link abaixo e clique em 'Buscar'",
-      "Assista o preview e baixe o vídeo",
-    ],
-    youtube: [
-      "Abra o YouTube e encontre o vídeo",
-      "Copie o link da barra de endereços",
-      "Cole o link abaixo e clique em 'Buscar'",
-      "Assista o preview e baixe o vídeo",
-    ]
-  };
-
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -259,7 +232,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
       a.href = blobUrl;
       a.download = finalFilename;
       document.body.appendChild(a);
-a.click();
+      a.click();
 
       toast({
         title: "Download Concluído!",
@@ -287,46 +260,28 @@ a.click();
 
   return (
     <div className="p-6 animate-in fade-in duration-500">
-      <header className="relative w-full pb-4 mb-6 border-b border-border">
-        <Button variant="ghost" onClick={onGoBack} className="absolute top-0 left-0 px-2 hover:bg-secondary">
+      <header className="flex w-full mb-6">
+        <Button variant="ghost" onClick={onGoBack} className="px-2 hover:bg-secondary">
           <ArrowLeft />
           <span className="ml-2">Voltar</span>
         </Button>
-        <div className="flex flex-col items-center justify-center w-full gap-2 pt-12 text-center">
-          <span className={`flex items-center justify-center w-10 h-10 rounded-lg ${platform.iconColorClass} flex-shrink-0`}>
-            <Icon className="w-6 h-6" />
-          </span>
-          <h2 className="text-xl font-bold whitespace-nowrap">
-            Download {platform.name}
-          </h2>
-        </div>
       </header>
 
-      <div className="p-5 mb-6 rounded-lg bg-secondary border-l-4 border-primary">
-          <h3 className="flex items-center gap-3 mb-3 font-semibold text-lg">
-            <School className="text-accent" />
-            Como Baixar
-          </h3>
-          <ol className="text-sm list-decimal list-inside space-y-2 text-muted-foreground">
-            {platformInstructions[platform.id as keyof typeof platformInstructions].map((step, index) => (
-              <li key={index}>{step}</li>
-            ))}
-          </ol>
-      </div>
-
-      <div className="p-6 mb-6 rounded-lg bg-secondary">
-        <h3 className="mb-4 text-xl font-bold">Cole o Link do {platform.name}</h3>
+      <div className="mb-6">
+        <h2 className="mb-4 text-3xl font-bold">Download {platform.name}</h2>
         <form onSubmit={handleSearch}>
-            <div className="relative mb-4">
-                <LinkIcon className="absolute w-5 h-5 left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Input 
-                    type="text"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder={`https://www.${platform.id}.com/...`}
-                    className="pl-10 h-12 text-base focus-visible:ring-primary"
-                    disabled={loading || !!downloadProgress}
-                />
+            <div className="flex items-center gap-4 mb-4">
+              <span className={`flex items-center justify-center w-12 h-12 rounded-lg ${platform.iconColorClass} flex-shrink-0`}>
+                  <Icon className="w-8 h-8" />
+              </span>
+              <Input 
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder={`Cole o link do vídeo do ${platform.name} que você deseja baixar`}
+                  className="h-12 text-base focus-visible:ring-primary"
+                  disabled={loading || !!downloadProgress}
+              />
             </div>
             <Button type="submit" className="w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-pink-500 hover:shadow-lg hover:shadow-primary/40 hover:-translate-y-0.5 transition-all duration-300" disabled={loading || !!downloadProgress}>
                 {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Search className="mr-2 h-5 w-5" />}

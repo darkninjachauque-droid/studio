@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { Check, Star, Zap } from "lucide-react";
 import { SubscriptionContext } from "@/context/SubscriptionContext";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +22,7 @@ export default function PricingPage() {
     const subscriptionContext = useContext(SubscriptionContext);
     const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [confirmationMessage, setConfirmationMessage] = useState("");
 
 
     if (!subscriptionContext) {
@@ -32,6 +34,7 @@ export default function PricingPage() {
     const handleSelectPlan = (plan: Plan) => {
         setSelectedPlan(plan);
         setIsDialogOpen(true);
+        setConfirmationMessage(""); // Reset message on new dialog open
     };
 
     const handleConfirmPayment = () => {
@@ -161,7 +164,7 @@ export default function PricingPage() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Instruções de Pagamento</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Para ativar seu plano {selectedPlan?.name} ({selectedPlan?.price}), por favor, faça a transferência para uma das contas abaixo.
+                            Para ativar seu plano {selectedPlan?.name} ({selectedPlan?.price}), faça a transferência para uma das contas abaixo.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <div className="p-4 my-4 space-y-4 border rounded-lg bg-secondary border-border">
@@ -176,12 +179,24 @@ export default function PricingPage() {
                             <p className="text-muted-foreground">Nome: <span className="text-white">Manuel</span></p>
                         </div>
                     </div>
+                    <div className="space-y-2">
+                        <label htmlFor="confirmation-message" className="text-sm font-medium leading-none text-foreground">
+                            Cole a Mensagem de Confirmação
+                        </label>
+                        <Textarea
+                            id="confirmation-message"
+                            placeholder="Ex: Confirmado CL44I9N5U22. Transferiste 150.00MT..."
+                            value={confirmationMessage}
+                            onChange={(e) => setConfirmationMessage(e.target.value)}
+                            className="min-h-[100px]"
+                        />
+                    </div>
                      <p className="text-xs text-center text-muted-foreground">
-                        Após o pagamento, clique no botão abaixo para ativar seu plano.
+                        Após colar a mensagem de confirmação, clique no botão abaixo para ativar.
                     </p>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleConfirmPayment}>
+                        <AlertDialogAction onClick={handleConfirmPayment} disabled={!confirmationMessage.trim()}>
                             Já Paguei, Ativar Plano
                         </AlertDialogAction>
                     </AlertDialogFooter>

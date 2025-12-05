@@ -1,13 +1,7 @@
-// This is a basic service worker
-self.addEventListener('install', (event) => {
-  console.log('Service Worker installing.');
-});
-
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating.');
-});
+// This is a basic service worker file.
+// It's required for a PWA to be installable.
 
 self.addEventListener('fetch', (event) => {
-  // Basic fetch handler
-  event.respondWith(fetch(event.request));
+  // We are not adding any caching logic for now.
+  // This just makes the app installable.
 });

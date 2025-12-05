@@ -260,25 +260,28 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
 
   return (
     <div className="p-6 animate-in fade-in duration-500">
-      <header className="flex w-full mb-6">
-        <Button variant="ghost" onClick={onGoBack} className="px-2 hover:bg-secondary">
+      <header className="flex w-full mb-6 items-center">
+        <Button variant="ghost" onClick={onGoBack} className="px-2 hover:bg-secondary -ml-2">
           <ArrowLeft />
           <span className="ml-2">Voltar</span>
         </Button>
       </header>
 
       <div className="mb-6">
-        <h2 className="mb-4 text-3xl font-bold">Download {platform.name}</h2>
+        <div className="flex items-center justify-center gap-3 mb-4">
+            <span className={`flex items-center justify-center w-10 h-10 rounded-lg ${platform.iconColorClass} flex-shrink-0`}>
+                <Icon className="w-6 h-6" />
+            </span>
+            <h2 className="text-2xl font-bold">Download {platform.name}</h2>
+        </div>
+
         <form onSubmit={handleSearch}>
             <div className="flex items-center gap-4 mb-4">
-              <span className={`flex items-center justify-center w-12 h-12 rounded-lg ${platform.iconColorClass} flex-shrink-0`}>
-                  <Icon className="w-8 h-8" />
-              </span>
               <Input 
                   type="text"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  placeholder={`Cole o link do vídeo do ${platform.name} que você deseja baixar`}
+                  placeholder={`Cole o link do vídeo do ${platform.name}`}
                   className="h-12 text-base focus-visible:ring-primary"
                   disabled={loading || !!downloadProgress}
               />
@@ -372,3 +375,5 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     </div>
   );
 }
+
+    

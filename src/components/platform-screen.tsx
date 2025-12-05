@@ -85,8 +85,7 @@ export default function PlatformScreen({ platform, onGoBack }: PlatformScreenPro
     setDownloadProgress(null);
 
     try {
-      const proxyUrl = `/api/proxy?url=${encodeURIComponent(platform.apiUrl(cleanUrl))}`;
-      const response = await fetch(proxyUrl);
+      const response = await fetch(platform.apiUrl(cleanUrl));
       
       if (!response.ok) {
         let errorMsg = `Não foi possível encontrar o vídeo. Verifique a URL e tente novamente. (Status: ${response.status})`;

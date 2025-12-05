@@ -48,16 +48,8 @@ export default function InstallPwaButton() {
     setDeferredPrompt(null);
   };
 
-  if (isAppInstalled) {
-    return (
-        <div className="text-center p-3 mt-6 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20">
-            <p className="text-sm">O aplicativo já está instalado no seu dispositivo!</p>
-        </div>
-    );
-  }
-  
-  if (!deferredPrompt) {
-    return null; // Don't show anything if PWA is not installable
+  if (isAppInstalled || !deferredPrompt) {
+    return null;
   }
 
   return (

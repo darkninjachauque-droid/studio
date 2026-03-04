@@ -1,4 +1,4 @@
-"use client";
+use client;
 
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Instagram, Facebook, Youtube, Info } from "lucide-react";
@@ -61,7 +61,7 @@ export default function HomeScreen({ onPlatformSelect }: HomeScreenProps) {
       
       <h2 className="relative pb-3 mb-6 text-2xl font-bold text-center">
         Escolha a Plataforma
-        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-primary to-accent rounded-full animate-gradient" />
+        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-gradient-to-r from-primary to-accent rounded-full animate-gradient"/>
       </h2>
       <div className="grid grid-cols-1 gap-3">
         {platformsData.map((platform) => {

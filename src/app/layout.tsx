@@ -16,7 +16,10 @@ export default function RootLayout({
   return (
     <html lang="pt" className="dark">
       <head>
+        {/* Favicon */}
         <link rel="icon" href="https://i.ibb.co/4R99MLDz/unnamed.jpg" />
+
+        {/* Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -29,15 +32,6 @@ export default function RootLayout({
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4540418582142311"
           crossOrigin="anonymous"
-        ></script>
-
-        {/* Inicialização automática opcional */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (adsbygoogle = window.adsbygoogle || []).push({});
-            `,
-          }}
         />
       </head>
 
@@ -51,11 +45,13 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                  navigator.serviceWorker.register('/sw.js').then(registration => {
-                    console.log('ServiceWorker registrado:', registration.scope);
-                  }).catch(err => {
-                    console.log('Falha no ServiceWorker:', err);
-                  });
+                  navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                      console.log('ServiceWorker registrado:', registration.scope);
+                    })
+                    .catch(err => {
+                      console.log('Falha no ServiceWorker:', err);
+                    });
                 });
               }
             `,
